@@ -35,6 +35,18 @@ You can install _Models_ via [pip] from [PyPI]:
 $ pip install models
 ```
 
+## Running notebooks
+
+```console
+env PYTHONPATH=`pwd` jupyter notebook
+```
+
+or (if you have fish shell)
+
+```console
+env PYTHONPATH=(pwd) jupyter notebook
+```
+
 ## Usage
 
 Please see the [Command-line Reference] for details.
