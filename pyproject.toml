@@ -22,6 +22,7 @@ jupyter = "^1.0.0"
 openai = "^0.27.1"
 pinecone-client = {extras = ["grpc"], version = "^2.2.1"}
 datasets = "^2.10.1"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
@@ -57,7 +58,7 @@ black = "^23.1.0"
 nbstripout = "^0.6.1"
 
 [tool.coverage.paths]
-source = ["src", "*/site-packages"]
+source = ["models", "*/site-packages"]
 tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
