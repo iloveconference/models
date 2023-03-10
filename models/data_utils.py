@@ -2,6 +2,7 @@
 
 import os
 import re
+from typing import Generator
 
 
 def get_filenames(directory: str) -> list[str]:
@@ -13,7 +14,7 @@ def get_filenames(directory: str) -> list[str]:
     ]
 
 
-def get_sections(text: str) -> list[tuple[str, str]]:
+def get_sections(text: str) -> Generator[tuple[str, str], None, None]:
     """Get sections in text as (section title, section text)."""
     section_title = ""
     for ix, region in enumerate(re.split(r"([^\n]+)\n-{4,}(?:\n|$)", text)):
