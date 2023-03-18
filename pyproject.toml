@@ -23,6 +23,9 @@ openai = "^0.27.1"
 pinecone-client = {extras = ["grpc"], version = "^2.2.1"}
 datasets = "^2.10.1"
 python-dotenv = "^1.0.0"
+transformers = "^4.27.1"
+nltk = "^3.8.1"
+torch = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

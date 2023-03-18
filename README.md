@@ -1,55 +1,44 @@
 # Models
 
-[![PyPI](https://img.shields.io/pypi/v/models.svg)][pypi status]
-[![Status](https://img.shields.io/pypi/status/models.svg)][pypi status]
-[![Python Version](https://img.shields.io/pypi/pyversions/models)][pypi status]
-[![License](https://img.shields.io/pypi/l/models)][license]
-
-[![Read the documentation at https://models.readthedocs.io/](https://img.shields.io/readthedocs/models/latest.svg?label=Read%20the%20Docs)][read the docs]
-[![Tests](https://github.com/DallanQ/models/workflows/Tests/badge.svg)][tests]
-[![Codecov](https://codecov.io/gh/DallanQ/models/branch/main/graph/badge.svg)][codecov]
-
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
-[pypi status]: https://pypi.org/project/models/
-[read the docs]: https://models.readthedocs.io/
-[tests]: https://github.com/DallanQ/models/actions?workflow=Tests
-[codecov]: https://app.codecov.io/gh/DallanQ/models
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 
-## Features
+## Overview
 
-- TODO
+Models and code to process data for [I Love Conference](https://iloveconference.org).
+
+Can be repurposed to create models and process data for any semantic search project.
 
 ## Requirements
 
-- TODO
+- python 3.10
+- Poetry: `curl -sSL https://install.python-poetry.org | python3 - --version 1.4.0`
+- nox: `pipx install nox && pipx inject nox nox-poetry`
 
 ## Installation
 
-You can install _Models_ via [pip] from [PyPI]:
+`poetry install`
 
-```console
-$ pip install models
-```
+## Downloading data
+
+`mkdir data`
+
+`aws s3 sync s3://iloveconference.data data`
 
 ## Running notebooks
 
-```console
-env PYTHONPATH=`pwd` jupyter notebook
-```
+`` env PYTHONPATH=`pwd` jupyter notebook ``
 
 or (if you have fish shell)
 
-```console
-env PYTHONPATH=(pwd) jupyter notebook
-```
+`env PYTHONPATH=(pwd) jupyter notebook`
 
-## Usage
+## Running Label Studio
 
-Please see the [Command-line Reference] for details.
+`docker run -it -p 8080:8080 -v ~/iloveconference/labelstudio-data:/label-studio/data heartexlabs/label-studio:latest`
 
 ## Contributing
 
@@ -73,11 +62,10 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 [@cjolowicz]: https://github.com/cjolowicz
 [pypi]: https://pypi.org/
 [hypermodern python cookiecutter]: https://github.com/cjolowicz/cookiecutter-hypermodern-python
-[file an issue]: https://github.com/DallanQ/models/issues
+[file an issue]: https://github.com/iloveconference/models/issues
 [pip]: https://pip.pypa.io/
 
 <!-- github-only -->
 
-[license]: https://github.com/DallanQ/models/blob/main/LICENSE
-[contributor guide]: https://github.com/DallanQ/models/blob/main/CONTRIBUTING.md
-[command-line reference]: https://models.readthedocs.io/en/latest/usage.html
+[license]: https://github.com/iloveconference/models/blob/main/LICENSE
+[contributor guide]: https://github.com/iloveconference/models/blob/main/CONTRIBUTING.md
