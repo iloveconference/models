@@ -26,6 +26,11 @@ python-dotenv = "^1.0.0"
 transformers = "^4.27.1"
 nltk = "^3.8.1"
 torch = "^2.0.0"
+cohere = "^4.1.1"
+sentence-transformers = "^2.2.2"
+spacy = "^3.5.1"
+matplotlib = "^3.7.1"
+types-tqdm = "^4.65.0.1"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
@@ -76,6 +81,9 @@ fail_under = 70
 profile = "black"
 force_single_line = true
 lines_after_imports = 2
+
+[tool.black]
+line-length = 120
 
 [tool.mypy]
 strict = true

@@ -22,6 +22,8 @@ Can be repurposed to create models and process data for any semantic search proj
 
 `poetry install`
 
+`python -m spacy download en_core_web_sm`
+
 ## Downloading data
 
 `mkdir data`
