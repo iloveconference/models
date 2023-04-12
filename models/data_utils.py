@@ -79,7 +79,7 @@ def get_segment_texts_and_ids(
     segments = []
     curr_segment_id = ""
     curr_segment_ix = 0
-    curr_segment = []
+    curr_segment: list[str] = []
     for (paragraph, _id), segment_ix in zip(paragraph_texts_and_ids, segmentation, strict=True):
         if segment_ix != curr_segment_ix or _count_words(curr_segment) + _count_words([paragraph]) > max_segment_len:
             if len(curr_segment) > 0:
