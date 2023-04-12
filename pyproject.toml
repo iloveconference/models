@@ -19,7 +19,7 @@ Changelog = "https://github.com/DallanQ/models/releases"
 python = "^3.10"
 click = ">=8.0.1"
 jupyter = "^1.0.0"
-openai = "^0.27.1"
+openai = "^0.27.2"
 pinecone-client = {extras = ["grpc"], version = "^2.2.1"}
 datasets = "^2.10.1"
 python-dotenv = "^1.0.0"
