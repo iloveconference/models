@@ -21,15 +21,78 @@ def get_sections(text: str) -> Generator[tuple[str, str], None, None]:
 
 
 def clean_text(text: str) -> str:
-    """Clean text: remove headers, images, links, and extra whitespace."""
+    """Clean text: remove headers, images, links, anchors, and extra whitespace."""
     # remove headers
     text = re.sub(r"[^\n]+\n-{4,}(\n|$)", "", text)
     # remove images
     text = re.sub(r"!\[\]\(\)\s+Image[^\n]+\n", "", text)
     # remove links
-    text = re.sub(r"\[[^\]]+\]\([^\)]+\)", "", text)
+    text = re.sub(r"(\[[^\]]+\])\([^\)]+\)", r"\1", text)
+    # remove anchors
+    text = re.sub(r"<a name=\"[^\"]+\"></a>", "", text)
+    # remove citations
+    text = re.sub(r"\[[0-9]+\]", "", text)
     # convert fancy quotes to quotes
+    text = re.sub(r"[‘’]", "'", text)
     text = re.sub(r"[“”]", '"', text)
+    # convert nbsp and zero-width space to space
+    text = text.replace("\u00a0", " ").replace("\u200b", " ")
     # remove newlines and tabs
-    text = text.replace("\n", " ").replace("\r", " ").replace("\t", " ").strip()
+    text = text.replace("\n", " ").replace("\r", " ").replace("\t", " ")
+    # remove extra whitespace
+    text = re.sub(r"\s+", " ", text)
+    # strip
+    text = text.strip()
     return text
+
+
+def get_paragraph_id(paragraph: str) -> str:
+    """Get paragraph ID."""
+    match = re.search(r'<a name="(.*?)"', paragraph)
+    if match:
+        anchor_name = match.group(1)
+        return anchor_name
+    return ""
+
+
+def get_paragraph_texts_and_ids(contents: str) -> list[tuple[str, str]]:
+    """Get paragraphs (text, anchor) from contents."""
+    paragraphs = []
+    for paragraph in contents.split("\n\n\n"):
+        _id = get_paragraph_id(paragraph)
+        paragraph = clean_text(paragraph)
+        if not paragraph:
+            continue
+        paragraphs.append((paragraph, _id))
+    return paragraphs
+
+
+def _count_words(texts: list[str]) -> int:
+    """Count words in texts."""
+    return sum(len(text.split()) for text in texts)
+
+
+def get_segment_texts_and_ids(
+    paragraph_texts_and_ids: list[tuple[str, str]], segmentation: list[int], max_segment_len: int
+) -> list[tuple[str, str]]:
+    """Group paragraphs into segments, and use the earliest anchor as the segment ID."""
+    segments = []
+    curr_segment_id = ""
+    curr_segment_ix = 0
+    curr_segment = []
+    for (paragraph, _id), segment_ix in zip(paragraph_texts_and_ids, segmentation, strict=True):
+        if segment_ix != curr_segment_ix or _count_words(curr_segment) + _count_words([paragraph]) > max_segment_len:
+            if len(curr_segment) > 0:
+                segments.append(("\n\n\n".join(curr_segment), curr_segment_id))
+            if segment_ix == curr_segment_ix:
+                curr_segment = [curr_segment[-1]]  # overlap
+            else:
+                curr_segment = []
+            curr_segment_id = ""
+            curr_segment_ix = segment_ix
+        if curr_segment_id == "" and _id != "":
+            curr_segment_id = _id
+        curr_segment.append(paragraph)
+    if len(curr_segment) > 0:
+        segments.append(("\n\n\n".join(curr_segment), curr_segment_id))
+    return segments
