@@ -3,7 +3,7 @@
 from models import analysis_utils
 
 
-def test_get_log_messages():
+def test_get_log_messages() -> None:
     """It returns log messages."""
     log = {
         "messageType": "DATA_MESSAGE",

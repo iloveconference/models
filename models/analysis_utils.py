@@ -6,11 +6,11 @@ import re
 from io import BytesIO
 from typing import Any
 
-import boto3
+import boto3  # type: ignore
 from tqdm import tqdm
 
 
-def load_logs(bucket_name: str, prefix: str = "") -> list:
+def load_logs(bucket_name: str, prefix: str = "") -> list[dict[str, Any]]:
     """Load logs from S3 bucket."""
     # Initialize an empty list to hold the JSON objects
     json_objects = []
@@ -48,7 +48,7 @@ def load_logs(bucket_name: str, prefix: str = "") -> list:
     return json_objects
 
 
-def get_log_messages(logs: list[dict[str, Any]], message_type: str) -> list[dict, Any]:
+def get_log_messages(logs: list[dict[str, Any]], message_type: str) -> list[dict[str, Any]]:
     """Get log messages of a specific type."""
     messages = []
     for log in logs:
