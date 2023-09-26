@@ -1,6 +1,6 @@
 """Test cases for the analysis_utils module."""
 
-from models import analysis_utils
+from models import rank_eval_utils
 
 
 def test_get_log_messages() -> None:
@@ -74,7 +74,7 @@ def test_get_log_messages() -> None:
         ],
     }
 
-    log_messages = analysis_utils.get_log_messages([log], "search")
+    log_messages = rank_eval_utils.get_log_messages([log], "search")
     assert len(log_messages) == 2
     assert log_messages[0]["prompt"] == "prompt"
     assert log_messages[0]["response"]["q"] == "question"

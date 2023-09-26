@@ -1,4 +1,4 @@
-"""Test cases for the segment_train module."""
+"""Test cases for the split_model_train module."""
 
 from typing import Iterator
 from typing import NamedTuple
@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd  # type: ignore
 from numpy.typing import NDArray
 
-from models import segment_train
+from models import split_model_train
 
 
 def test_predict_using_pairs() -> None:
-    """It predicts the segments for each paragraph using the paragraph pairs."""
+    """It predicts the splits for each paragraph using the paragraph pairs."""
 
     def dummy_pair_scorer(text1: str, text2: str) -> float:
         if text1.endswith("world!") and text2.startswith("This"):
@@ -19,7 +19,7 @@ def test_predict_using_pairs() -> None:
         return 0.6
 
     threshold = 0.5
-    predictor = segment_train.predict_using_pairs(dummy_pair_scorer, threshold)
+    predictor = split_model_train.predict_using_pairs(dummy_pair_scorer, threshold)
 
     paragraphs = [
         "Hello, world!",
@@ -35,7 +35,7 @@ def test_predict_using_pairs() -> None:
 
 
 def test_predict_using_embeddings() -> None:
-    """It predicts the segments for each paragraph using the paragraph embeddings."""
+    """It predicts the splits for each paragraph using the paragraph embeddings."""
 
     def dummy_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
         embeddings = [
@@ -48,7 +48,7 @@ def test_predict_using_embeddings() -> None:
 
     threshold = 0.5
 
-    predictor = segment_train.predict_using_embeddings(dummy_embedder, threshold)
+    predictor = split_model_train.predict_using_embeddings(dummy_embedder, threshold)
 
     paragraphs = [
         "Hello, world!",
@@ -109,13 +109,13 @@ def test_syntactic_paragraph_features() -> None:
     ]
 
     for paragraph, result in tests:
-        features = segment_train.syntactic_paragraph_features(paragraph)
+        features = split_model_train.syntactic_paragraph_features(paragraph)
         assert features == result, f"Expected {result}, but got {features}"
 
 
 def test_predict_using_syntactic_features() -> None:
-    """It predicts the segments for each paragraph using the syntactic features."""
-    predictor = segment_train.predict_using_syntactic_features(segment_train.syntactic_paragraph_features)
+    """It predicts the splits for each paragraph using the syntactic features."""
+    predictor = split_model_train.predict_using_syntactic_features(split_model_train.syntactic_paragraph_features)
 
     paragraphs = [
         "Hello, world! ",
@@ -176,15 +176,15 @@ def test_group_paragraphs_using_syntactic_features() -> None:
         ],
     ]
 
-    groups = segment_train.group_paragraphs_using_syntactic_features(
-        segment_train.syntactic_paragraph_features, paragraphs
+    groups = split_model_train.group_paragraphs_using_syntactic_features(
+        split_model_train.syntactic_paragraph_features, paragraphs
     )
 
     assert groups == expected_output, f"Expected {expected_output}, but got {groups}"
 
 
 def test_predict_using_features_and_embeddings() -> None:
-    """It predicts the segments for each paragraph using the syntactic features followed by embeddings."""
+    """It predicts the splits for each paragraph using the syntactic features followed by embeddings."""
 
     def dummy_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
         embeddings = [
@@ -215,8 +215,8 @@ def test_predict_using_features_and_embeddings() -> None:
 
     expected_output = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]
 
-    predictor = segment_train.predict_using_features_and_embeddings(
-        segment_train.syntactic_paragraph_features, dummy_embedder, threshold
+    predictor = split_model_train.predict_using_features_and_embeddings(
+        split_model_train.syntactic_paragraph_features, dummy_embedder, threshold
     )
 
     result = predictor(paragraphs)
@@ -240,7 +240,7 @@ def _dummy_parser(text: str) -> _Doc:
 
 
 def test_predict_using_features_and_ensemble() -> None:
-    """It predicts the segments for each paragraph using the syntactic features followed by embeddings."""
+    """It predicts the splits for each paragraph using the syntactic features followed by embeddings."""
 
     def dummy_embedder(texts: list[str]) -> list[NDArray[np.float32]]:
         return [
@@ -261,8 +261,8 @@ def test_predict_using_features_and_ensemble() -> None:
 
     threshold = 0.5
 
-    predict = segment_train.predict_using_features_and_ensemble(
-        segment_train.syntactic_paragraph_features,
+    predict = split_model_train.predict_using_features_and_ensemble(
+        split_model_train.syntactic_paragraph_features,
         dummy_embedder,
         dummy_embedder,
         _dummy_parser,
@@ -272,17 +272,17 @@ def test_predict_using_features_and_ensemble() -> None:
 
     expected_output = [1, 1, 2]
 
-    segments = predict(paragraphs)
+    splits = predict(paragraphs)
 
-    assert len(segments) == 3, f"Expected 3 segments, but got {len(segments)}"
-    assert segments == expected_output, f"Expected segments {expected_output}, but got {segments}"
+    assert len(splits) == 3, f"Expected 3 splits, but got {len(splits)}"
+    assert splits == expected_output, f"Expected splits {expected_output}, but got {splits}"
 
 
 def test_count_words() -> None:
     """It counts the number of words in the paragraph."""
     tokens = [_Token("WORD"), _Token("PUNCT"), _Token("WORD")]
 
-    assert segment_train.count_words(tokens) == 2
+    assert split_model_train.count_words(tokens) == 2
 
 
 def test_get_text_features() -> None:
@@ -291,7 +291,7 @@ def test_get_text_features() -> None:
         "pre_tokens": 1 / (2 + 1),
         "pre_sentences": 1 / (1 + 1),
     }
-    features = segment_train.get_text_features("pre", "dummy", _dummy_parser)
+    features = split_model_train.get_text_features("pre", "dummy", _dummy_parser)
 
     assert features == expected_output, f"Expected {expected_output}, but got {features}"
 
@@ -308,7 +308,7 @@ def test_get_pair_features() -> None:
     ]
     texts = ["Sample paragraph 1", "Sample paragraph 2"]
 
-    features = segment_train.get_pair_features(0, 1, openai_embeds, mpnet_embeds, _dummy_parser, texts)
+    features = split_model_train.get_pair_features(0, 1, openai_embeds, mpnet_embeds, _dummy_parser, texts)
 
     expected_features = {
         "openai": float(np.dot(openai_embeds[0], openai_embeds[1])),
@@ -332,26 +332,26 @@ def test_get_labeled_pairs() -> None:
             "paragraphs": [
                 {
                     "text": "This is paragraph one. It should not be combined with any other paragraph.",
-                    "segment": 1,
+                    "split": 1,
                 },
                 {
                     "text": "This is paragraph two. It should not be combined with any other paragraph.",
-                    "segment": 1,
+                    "split": 1,
                 },
                 {
                     "text": "This is paragraph three. It should not be combined with any other paragraph.",
-                    "segment": 2,
+                    "split": 2,
                 },
             ]
         }
     ]
 
-    pairs = segment_train.get_labeled_pairs(
+    pairs = split_model_train.get_labeled_pairs(
         talk_sections,
         dummy_embedder,
         dummy_embedder,
         _dummy_parser,
-        segment_train.syntactic_paragraph_features,
+        split_model_train.syntactic_paragraph_features,
     )
 
     assert len(pairs) == 2, f"Expected 1 pair, but got {len(pairs)}"
@@ -360,14 +360,14 @@ def test_get_labeled_pairs() -> None:
 
 
 def test_get_paragraph_ngram_pairs() -> None:
-    """It returns ngram pairs from the paragraph-segments."""
+    """It returns ngram pairs from the paragraph-splits."""
     tests = [
         (
             [
-                {"text": "P1-1", "segment": 1},
-                {"text": "P2-1", "segment": 1},
-                {"text": "P3-2", "segment": 2},
-                {"text": "P4-2", "segment": 2},
+                {"text": "P1-1", "split": 1},
+                {"text": "P2-1", "split": 1},
+                {"text": "P3-2", "split": 2},
+                {"text": "P4-2", "split": 2},
             ],
             [
                 {
@@ -415,6 +415,6 @@ def test_get_paragraph_ngram_pairs() -> None:
             ],
         )
     ]
-    for paragraph_segments, expected in tests:
-        result = segment_train.get_paragraph_ngram_pairs(paragraph_segments)
+    for paragraph_splits, expected in tests:
+        result = split_model_train.get_paragraph_ngram_pairs(paragraph_splits)
         assert result == expected

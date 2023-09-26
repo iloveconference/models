@@ -1,4 +1,4 @@
-"""Functions to train segmentation models."""
+"""Functions to train splitation models."""
 import re
 from typing import Any
 from typing import Callable
@@ -10,7 +10,7 @@ import pandas as pd  # type: ignore
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from models.data_utils import clean_text
+from models.split_utils import clean_text
 
 
 def get_mpnet_embedder(
@@ -61,17 +61,17 @@ def get_bert_wiki_paras_scorer(pipe: Any) -> Callable[[str, str], float]:
 
 
 def predict_using_pairs(pair_scorer: Callable[[str, str], float], threshold: float) -> Callable[[list[str]], list[int]]:
-    """Predict segments using pair scores."""
+    """Predict splits using pair scores."""
 
     def predict(paragraphs: list[str]) -> list[int]:
         current = 1
-        segments = [current]
+        splits = [current]
         for i in range(1, len(paragraphs)):
             score = pair_scorer(paragraphs[i - 1], paragraphs[i])
             if score < threshold:
                 current += 1
-            segments.append(current)
-        return segments
+            splits.append(current)
+        return splits
 
     return predict
 
@@ -79,18 +79,18 @@ def predict_using_pairs(pair_scorer: Callable[[str, str], float], threshold: flo
 def predict_using_embeddings(
     embedder: Callable[[list[str]], list[NDArray[np.float32]]], threshold: float
 ) -> Callable[[list[str]], list[int]]:
-    """Predict segments using embeddings."""
+    """Predict splits using embeddings."""
 
     def predict(paragraphs: list[str]) -> list[int]:
         embeddings = embedder(paragraphs)
         current = 1
-        segments = [current]
+        splits = [current]
         for i in range(1, len(embeddings)):
             score = np.dot(embeddings[i - 1], embeddings[i])
             if score < threshold:
                 current += 1
-            segments.append(current)
-        return segments
+            splits.append(current)
+        return splits
 
     return predict
 
@@ -113,11 +113,11 @@ def syntactic_paragraph_features(text: str) -> dict[str, int]:
 def predict_using_syntactic_features(
     syntactic_feature_generator: Callable[[str], dict[str, int]]
 ) -> Callable[[list[str]], list[int]]:
-    """Predict segments using syntactic features."""
+    """Predict splits using syntactic features."""
 
     def predict(paragraphs: list[str]) -> list[int]:
         current = 1
-        segments = []
+        splits = []
         features: Optional[dict[str, int]] = None
         next_features: Optional[dict[str, int]] = syntactic_feature_generator(paragraphs[0])
         for i in range(len(paragraphs)):
@@ -140,8 +140,8 @@ def predict_using_syntactic_features(
                 pass
             else:
                 current += 1
-            segments.append(current)
-        return segments
+            splits.append(current)
+        return splits
 
     return predict
 
@@ -151,16 +151,16 @@ def group_paragraphs_using_syntactic_features(
 ) -> list[list[str]]:
     """Group paragraphs using syntactic features."""
     syntactic_predictor = predict_using_syntactic_features(syntactic_feature_generator)
-    feature_segments = syntactic_predictor(paragraphs)
-    prev_segment = None
+    feature_splits = syntactic_predictor(paragraphs)
+    prev_split = None
     paragraph_groups = []
     group: list[str] = []
-    for paragraph, feature_segment in zip(paragraphs, feature_segments, strict=True):
-        if feature_segment != prev_segment and len(group) > 0:
+    for paragraph, feature_split in zip(paragraphs, feature_splits, strict=True):
+        if feature_split != prev_split and len(group) > 0:
             paragraph_groups.append(group)
             group = []
         group.append(paragraph)
-        prev_segment = feature_segment
+        prev_split = feature_split
     paragraph_groups.append(group)
     return paragraph_groups
 
@@ -170,22 +170,22 @@ def predict_using_features_and_embeddings(
     embedder: Callable[[list[str]], list[NDArray[np.float32]]],
     threshold: float,
 ) -> Callable[[list[str]], list[int]]:
-    """Predict segments using syntactic features followed by embeddings."""
+    """Predict splits using syntactic features followed by embeddings."""
 
     def predict(paragraphs: list[str]) -> list[int]:
         # first group paragraphs using syntactic features
         paragraph_groups = group_paragraphs_using_syntactic_features(syntactic_feature_generator, paragraphs)
         # next get embeddings for paragraph groups
         embeddings = embedder(["\n".join(group) for group in paragraph_groups])
-        # finally generate segments for each group based on embeddings
+        # finally generate splits for each group based on embeddings
         current = 1
-        segments = [current] * len(paragraph_groups[0])
+        splits = [current] * len(paragraph_groups[0])
         for ix in range(1, len(embeddings)):
             score = np.dot(embeddings[ix - 1], embeddings[ix])
             if score < threshold:
                 current += 1
-            segments.extend([current] * len(paragraph_groups[ix]))
-        return segments
+            splits.extend([current] * len(paragraph_groups[ix]))
+        return splits
 
     return predict
 
@@ -198,7 +198,7 @@ def predict_using_features_and_ensemble(
     clf: Any,
     threshold: float,
 ) -> Callable[[list[str]], list[int]]:
-    """Predict segments using syntactic features and an ensemble."""
+    """Predict splits using syntactic features and an ensemble."""
 
     def predict(paragraphs: list[str]) -> list[int]:
         # first group paragraphs using syntactic features
@@ -207,17 +207,17 @@ def predict_using_features_and_ensemble(
         # next get embeddings for paragraph groups
         openai_embeds = openai_embedder(paragraph_group_texts)
         mpnet_embeds = mpnet_embedder(paragraph_group_texts)
-        # finally generate segments for each group based on classifier
+        # finally generate splits for each group based on classifier
         current = 1
-        segments = [current] * len(paragraph_groups[0])
+        splits = [current] * len(paragraph_groups[0])
         for ix in range(1, len(paragraph_groups)):
             features = get_pair_features(ix - 1, ix, openai_embeds, mpnet_embeds, parser, paragraph_group_texts)
             features_df = pd.DataFrame([features])
             score = clf.predict_proba(features_df)[0][1]
             if score < threshold:
                 current += 1
-            segments.extend([current] * len(paragraph_groups[ix]))
-        return segments
+            splits.extend([current] * len(paragraph_groups[ix]))
+        return splits
 
     return predict
 
@@ -270,12 +270,12 @@ def get_labeled_pairs(
 ) -> list[dict[str, Any]]:
     """Get labeled pairs for training.
 
-    Label is 1 if the two paragraphs are in the same segment, 0 otherwise.
+    Label is 1 if the two paragraphs are in the same split, 0 otherwise.
     """
     pairs = []
     for talk_section in tqdm(talk_sections):
-        paragraphs = [clean_text(paragraph_segment["text"]) for paragraph_segment in talk_section["paragraphs"]]
-        true_segments = [paragraph_segment["segment"] for paragraph_segment in talk_section["paragraphs"]]
+        paragraphs = [clean_text(paragraph_split["text"]) for paragraph_split in talk_section["paragraphs"]]
+        true_splits = [paragraph_split["split"] for paragraph_split in talk_section["paragraphs"]]
         # first group paragraphs using syntactic features
         paragraph_groups = group_paragraphs_using_syntactic_features(syntactic_feature_generator, paragraphs)
         paragraph_group_texts = ["\n".join(group) for group in paragraph_groups]
@@ -285,43 +285,43 @@ def get_labeled_pairs(
         prev_paragraphs = 0
         # finally, generate pairs
         for ix in range(1, len(paragraph_groups)):
-            left_segment = true_segments[prev_paragraphs]
-            right_segment = true_segments[prev_paragraphs + len(paragraph_groups[ix - 1])]
+            left_split = true_splits[prev_paragraphs]
+            right_split = true_splits[prev_paragraphs + len(paragraph_groups[ix - 1])]
             prev_paragraphs += len(paragraph_groups[ix - 1])
             features = get_pair_features(ix - 1, ix, openai_embeds, mpnet_embeds, parser, paragraph_group_texts)
-            features["label"] = 1 if left_segment == right_segment else 0
+            features["label"] = 1 if left_split == right_split else 0
             pairs.append(features)
     return pairs
 
 
-def get_paragraph_ngram_pairs(paragraph_segments: list[dict[str, Any]], ngram_size: int = 5) -> list[dict[str, Any]]:
-    """Generate ngram pairs from paragraph segments.
+def get_paragraph_ngram_pairs(paragraph_splits: list[dict[str, Any]], ngram_size: int = 5) -> list[dict[str, Any]]:
+    """Generate ngram pairs from paragraph splits.
 
-    Label the pair with a 1 if the paragraphs belong to different segments,
-    or a 0 if they belong to the same segment.
+    Label the pair with a 1 if the paragraphs belong to different splits,
+    or a 0 if they belong to the same split.
 
     NOT USED
     """
     ngram_pairs = []
-    for i_start in range(0, len(paragraph_segments)):
+    for i_start in range(0, len(paragraph_splits)):
         for i_end in range(1, ngram_size + 1):
             if (
-                i_start + i_end > len(paragraph_segments)
-                or paragraph_segments[i_start]["segment"] != paragraph_segments[i_start + i_end - 1]["segment"]
+                i_start + i_end > len(paragraph_splits)
+                or paragraph_splits[i_start]["split"] != paragraph_splits[i_start + i_end - 1]["split"]
             ):
                 continue
             i_text = "\n\n".join(
-                paragraph_segment["text"] for paragraph_segment in paragraph_segments[i_start : i_start + i_end]
+                paragraph_split["text"] for paragraph_split in paragraph_splits[i_start : i_start + i_end]
             )
             j_start = i_start + i_end
             for j_end in range(1, ngram_size + 1):
                 if (
-                    j_start + j_end > len(paragraph_segments)
-                    or paragraph_segments[j_start]["segment"] != paragraph_segments[j_start + j_end - 1]["segment"]
+                    j_start + j_end > len(paragraph_splits)
+                    or paragraph_splits[j_start]["split"] != paragraph_splits[j_start + j_end - 1]["split"]
                 ):
                     continue
                 j_text = "\n\n".join(
-                    paragraph_segment["text"] for paragraph_segment in paragraph_segments[j_start : j_start + j_end]
+                    paragraph_split["text"] for paragraph_split in paragraph_splits[j_start : j_start + j_end]
                 )
                 ngram_pairs.append(
                     {
@@ -329,9 +329,7 @@ def get_paragraph_ngram_pairs(paragraph_segments: list[dict[str, Any]], ngram_si
                         "ngrams_right": j_end,
                         "text_left": i_text,
                         "text_right": j_text,
-                        "label": 1
-                        if paragraph_segments[i_start]["segment"] != paragraph_segments[j_start]["segment"]
-                        else 0,
+                        "label": 1 if paragraph_splits[i_start]["split"] != paragraph_splits[j_start]["split"] else 0,
                     }
                 )
     return ngram_pairs

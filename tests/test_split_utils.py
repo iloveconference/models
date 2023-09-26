@@ -1,11 +1,11 @@
 """Test cases for the data_utils module."""
 
-from models import data_utils
+from models import split_utils
 
 
 def test_get_filenames() -> None:
     """It returns filenames."""
-    result = data_utils.get_filenames(".")
+    result = split_utils.get_filenames(".")
     assert len(result) > 0
 
 
@@ -27,7 +27,7 @@ line 3
 line 4
     """
 
-    result = list(data_utils.get_sections(text))
+    result = list(split_utils.get_sections(text))
     assert len(result) == 3
     assert result[0][0] == ""
     assert result[0][1] == "intro"
@@ -72,13 +72,13 @@ def test_get_paragraph_texts_and_ids() -> None:
         ('To Moses, God declared, "I have a work for thee" Test multiple anchors in the same paragraph.', "p5"),
     ]
 
-    result = data_utils.get_paragraph_texts_and_ids(content)
+    result = split_utils.get_paragraph_texts_and_ids(content)
     assert len(result) == 3
     assert result == expected
 
 
-def test_get_segment_texts_and_ids() -> None:
-    """It returns segments."""
+def test_get_split_texts_and_ids() -> None:
+    """It returns splits."""
     paragraph_texts_and_ids = [
         ("This is paragraph 1", "anchor_1"),
         ("This is paragraph 2", "anchor_2"),
@@ -87,7 +87,7 @@ def test_get_segment_texts_and_ids() -> None:
         ("This is paragraph 5", "anchor_5"),
         ("This is paragraph 6", "anchor_6"),
     ]
-    segmentation = [1, 1, 2, 2, 2, 3]
+    splits = [1, 1, 2, 2, 2, 3]
 
     expected_output = [
         ("This is paragraph 1\n\n\nThis is paragraph 2", "anchor_1"),
@@ -97,5 +97,5 @@ def test_get_segment_texts_and_ids() -> None:
         ("This is paragraph 6", "anchor_6"),
     ]
 
-    result = data_utils.get_segment_texts_and_ids(paragraph_texts_and_ids, segmentation, 10)
+    result = split_utils.get_split_texts_and_ids(paragraph_texts_and_ids, splits, 10)
     assert result == expected_output, f"Expected {expected_output}, but got {result}"
