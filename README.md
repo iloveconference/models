@@ -44,9 +44,13 @@ PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
 
 `aws s3 sync s3://iloveconference.data data`
 
-## Using models
+## Developing
 
 Activate the poetry virtual environment: `poetry shell`
+
+Periodically add the files you are working on to git and run `nox` to run all checks and tests as you develop.
+
+If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.11`, or `nox -s tests-3.11`
 
 ### Running notebooks
 
@@ -55,12 +59,6 @@ Activate the poetry virtual environment: `poetry shell`
 or (if you have fish shell)
 
 `env PYTHONPATH=(pwd) jupyter notebook`
-
-### Developing
-
-Periodically add the files you are working on to git and run `nox` to run all checks and tests as you develop.
-
-If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.11`, or `nox -s tests-3.11`
 
 ### Running Label Studio
 
