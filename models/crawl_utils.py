@@ -1,5 +1,6 @@
 """Crawl utils."""
 import json
+import time
 from typing import Optional
 from typing import Tuple
 
@@ -7,7 +8,11 @@ import requests
 
 
 def get_page(
-    url: str, headers: Optional[dict[str, str]] = None, encoding: str = "utf-8", timeout: int = 30
+    url: str, 
+    delay_seconds: int = 30, 
+    headers: Optional[dict[str, str]] = None, 
+    encoding: str = "utf-8", 
+    timeout: int = 30
 ) -> Tuple[int, str]:
     """Get page from url."""
     if headers is None:
@@ -26,6 +31,7 @@ def get_page(
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",  # noqa: B950
         }
     response = requests.get(url, headers=headers, timeout=timeout)
+    time.sleep(delay_seconds)
     if encoding:
         response.encoding = encoding
     return response.status_code, response.text
