@@ -1,11 +1,11 @@
-"""Test cases for the split_eval module."""
+"""Test cases for the split_model_eval module."""
 
 from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
 
-from models import split_eval
+from models import split_model_eval
 
 
 def test_get_split_boundaries() -> None:
@@ -18,7 +18,7 @@ def test_get_split_boundaries() -> None:
         ([0, 1, 1, 2], "1011"),
     ]
     for splits, boundaries in tests:
-        result = split_eval.get_split_boundaries(splits)
+        result = split_model_eval.get_split_boundaries(splits)
         assert result == boundaries
 
 
@@ -41,7 +41,7 @@ def test_eval_split_boundaries() -> None:
         },
     ]
     for test in tests:
-        pk_diff, window_diff, count_diff = split_eval.eval_split_boundaries(
+        pk_diff, window_diff, count_diff = split_model_eval.eval_split_boundaries(
             cast(list[int], test["true_splits"]),
             cast(list[int], test["pred_splits"]),
         )
@@ -77,7 +77,7 @@ def test_evaluate() -> None:
         },
     }
 
-    result = split_eval.evaluate(talk_sections, dummy_predictor, debug=False)
+    result = split_model_eval.evaluate(talk_sections, dummy_predictor, debug=False)
     assert result == expected_output, f"Expected {expected_output}, but got {result}"
 
 
@@ -96,7 +96,7 @@ def test_compare() -> None:
     all_pred_splits = [[1, 2, 3, 3]]
     expected_differences = 2
 
-    differences = split_eval.compare(talk_sections, all_pred_splits, 0, output=False)
+    differences = split_model_eval.compare(talk_sections, all_pred_splits, 0, output=False)
     assert differences == expected_differences
 
 
@@ -124,7 +124,9 @@ def test_evaluate_embedder() -> None:
     # predicted transition from para 2 to 3 is negative (true split did not change)
     expected_neg_similarities = [12.0]
 
-    pos_similarities, neg_similarities = split_eval.evaluate_embedder(talk_sections, all_pred_splits, mock_embedder)
+    pos_similarities, neg_similarities = split_model_eval.evaluate_embedder(
+        talk_sections, all_pred_splits, mock_embedder
+    )
 
     assert pos_similarities == expected_pos_similarities
     assert neg_similarities == expected_neg_similarities

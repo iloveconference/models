@@ -1,0 +1,4 @@
+[tools]
+python = "3.11"
+poetry = "1.6.1"
+pipx = "latest"
