@@ -52,6 +52,8 @@ Periodically add the files you are working on to git and run `nox` to run all ch
 
 If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.11`, or `nox -s tests-3.11`
 
+Run `nox` before creating a pull request to ensure that all checks pass.
+
 ### Running notebooks
 
 `` env PYTHONPATH=`pwd` jupyter notebook ``
