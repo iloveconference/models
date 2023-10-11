@@ -12,6 +12,7 @@
 /.env.*
 __pycache__/
 /notebooks/.ipynb_checkpoints/
+/models/.ipynb_checkpoints/
 /notebooks/wandb/
 .idea/
 .venv/
