@@ -42,7 +42,7 @@ PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
 
 `mkdir data`
 
-`aws s3 sync s3://iloveconference.data data`
+`aws s3 sync s3://scripturecentralqa.data data`
 
 ## Developing
 
@@ -55,6 +55,13 @@ If nox fails, you can run the individual checks and tests manually; e.g., `nox -
 Run `nox` before creating a pull request to ensure that all checks pass.
 
 ### Running notebooks
+
+After running `poetry shell`, you need to install the poetry virtual environment as a jupyter kernel. 
+Let's name it "models": `python -m ipykernel install --user --name models`
+You only need to do this once.
+
+You can run notebooks either in VS Code, or in your browser.
+To run notebooks in the browser, you run
 
 `` env PYTHONPATH=`pwd` jupyter notebook ``
 
