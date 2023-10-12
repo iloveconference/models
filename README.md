@@ -50,13 +50,14 @@ Activate the poetry virtual environment: `poetry shell`
 
 Periodically add the files you are working on to git and run `nox` to run all checks and tests as you develop.
 
-If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.11`, or `nox -s tests-3.11`
+If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.10`, or `nox -s tests-3.10`
 
 Run `nox` before creating a pull request to ensure that all checks pass.
 
 ### Running notebooks
 
-After running `poetry shell`, you need to install the poetry virtual environment as a jupyter kernel. 
+After running `poetry shell`, you need to install the poetry virtual environment as a jupyter kernel.
+
 Let's name it "models": `python -m ipykernel install --user --name models`
 You only need to do this once.
 

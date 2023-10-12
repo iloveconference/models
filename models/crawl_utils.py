@@ -8,11 +8,11 @@ import requests
 
 
 def get_page(
-    url: str, 
-    delay_seconds: int = 30, 
-    headers: Optional[dict[str, str]] = None, 
-    encoding: str = "utf-8", 
-    timeout: int = 30
+    url: str,
+    delay_seconds: int = 30,
+    headers: Optional[dict[str, str]] = None,
+    encoding: str = "utf-8",
+    timeout: int = 30,
 ) -> Tuple[int, str]:
     """Get page from url."""
     if headers is None:
