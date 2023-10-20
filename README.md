@@ -42,7 +42,7 @@ PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
 
 `mkdir data`
 
-`aws s3 sync s3://scripturecentralqa.data data`
+`aws s3 sync s3://scripturecentralqa.data data --no-sign-request`
 
 ## Developing
 
