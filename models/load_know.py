@@ -1,4 +1,4 @@
-"""Load knowhys"""
+"""Load knowhys."""
 
 import json
 import os
