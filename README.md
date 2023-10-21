@@ -27,6 +27,8 @@ Install dependencies using poetry: `poetry install`
 
 Install nox: `poetry run pipx install nox && poetry run pipx inject nox nox-poetry`
 
+Install pre-commit as a git hook: `poetry run pre-commit install`
+
 Install spacy model: `poetry run python -m spacy download en_core_web_sm`
 
 Create a `.env` file with the following variables:
@@ -42,7 +44,7 @@ PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
 
 `mkdir data`
 
-`aws s3 sync s3://scripturecentralqa.data data`
+`aws s3 sync s3://scripturecentralqa.data data --no-sign-request`
 
 ## Developing
 
