@@ -1,4 +1,4 @@
-"""Load conference talks."""
+"""Load knowhys"""
 
 import json
 import os
@@ -28,7 +28,7 @@ def _clean(text: str) -> str:
 
 
 def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document:
-    """Load a conference talk from a url and html."""
+    """Load knowhys from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
     title = soup.find("h1", class_ = "page-title").text
     author = soup.find("div", class_ = "field-nam-author").text
