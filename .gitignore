@@ -16,4 +16,5 @@ __pycache__/
 /notebooks/wandb/
 .idea/
 .venv/
+.vscode/
 *.log

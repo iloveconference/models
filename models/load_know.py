@@ -5,8 +5,6 @@ import os
 from typing import Any
 from typing import Iterator
 from typing import cast
-from urllib.parse import urljoin
-from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
@@ -17,56 +15,33 @@ from tqdm import tqdm
 from models.load_utils import clean
 
 
-class ConferenceMarkdownConverter(MarkdownConverter):  # type: ignore
-    """Create a custom MarkdownConverter."""
-
-    def __init__(self, **kwargs: Any):
-        """Initialize custom MarkdownConverter."""
-        super().__init__(**kwargs)
-        self.base_url = kwargs.get("base_url", "")
-
-    def convert_a(self, el, text, convert_as_inline):  # type: ignore
-        """Join hrefs with a base url."""
-        if "href" in el.attrs:
-            el["href"] = urljoin(self.base_url, el["href"])
-        return super().convert_a(el, text, convert_as_inline)
-
-    def convert_p(self, el, text, convert_as_inline):  # type: ignore
-        """Add anchor tags to paragraphs with ids."""
-        if el.has_attr("id") and len(el["id"]) > 0:
-            _id = el["id"]
-            text = f'<a name="{_id}"></a>{text}'  # noqa: B907
-        return super().convert_p(el, text, convert_as_inline)
-
-
 # Create shorthand method for custom conversion
 def _to_markdown(html: str, **options: Any) -> str:
     """Convert html to markdown."""
-    return cast(str, ConferenceMarkdownConverter(**options).convert(html))
+    return cast(str, MarkdownConverter(**options).convert(html))
 
 
-def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") -> Document:
+def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load a conference talk from a url and html."""
-    path_components = urlparse(url).path.split("/")
-    year, month = path_components[3:5]
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.select_one("article header h1")
-    author = soup.select_one("article p.author-name")
-    author_role = soup.select_one("article p.author-role")
-    body = soup.select_one("article div.body-block")
+    title = soup.find("h1", class_="page-title").text
+    author = soup.find("div", class_="field-nam-author").text.replace("Post contributed by", "")
+    date = soup.find("div", class_="field-name-publish-date").text
+    citation = soup.find(id="block-views-knowhy-citation-block")
+    body = soup.find("div", class_="group-left")
     content = clean(_to_markdown(str(body), base_url=url)) if body else ""
+
     metadata = {
-        "year": year,
-        "month": month,
         "url": url,
-        "title": clean(title.text) if title else "",
-        "author": clean(author.text) if author else "",
-        "author_role": clean(author_role.text) if author_role else "",
+        "title": clean(title) if title else "",
+        "author": clean(author) if author else "",
+        "date": clean(date) if date else "",
+        "citation": clean(_to_markdown(str(citation), base_url=url)) if citation else "",
     }
     return Document(page_content=content, metadata=metadata)
 
 
-class ConferenceTalkLoader(BaseLoader):
+class KnowhyLoader(BaseLoader):
     """Loader for General Conference Talks."""
 
     def lazy_load(self) -> Iterator[Document]:
@@ -86,7 +61,8 @@ class ConferenceTalkLoader(BaseLoader):
             path = os.path.join(self.path, filename)
             with open(path, encoding="utf8") as f:
                 data = json.load(f)
-            doc = load_conference_talk(data["url"], data["html"], bs_parser=self.bs_parser)
+                print(data)
+            doc = load_knowhy(data["url"], data["html"], bs_parser=self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
                     print("Missing title or content - skipping", filename)

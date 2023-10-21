@@ -6,6 +6,11 @@ from typing import Iterable
 from langchain.schema.document import Document
 
 
+def clean(text: str) -> str:
+    """Replace non-breaking space with normal space and remove surrounding whitespace."""
+    return text.replace(" ", " ").strip()
+
+
 def save_docs_to_jsonl(array: Iterable[Document], file_path: str) -> None:
     """Save documents to jsonl file."""
     with open(file_path, "w") as jsonl_file:
