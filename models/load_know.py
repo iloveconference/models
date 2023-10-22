@@ -61,7 +61,6 @@ class KnowhyLoader(BaseLoader):
             path = os.path.join(self.path, filename)
             with open(path, encoding="utf8") as f:
                 data = json.load(f)
-                print(data)
             doc = load_knowhy(data["url"], data["html"], bs_parser=self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
