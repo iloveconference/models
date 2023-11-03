@@ -26,8 +26,6 @@ def _to_markdown(html: str, **options: Any) -> str:
 def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load dc podcasts from a url and html."""
 
-    soup = BeautifulSoup(html, "html.parser")
-
     path_components = urlparse(url).path.split('/')
     title = path_components[-1]
     title = title.replace('-',' ')
@@ -35,11 +33,9 @@ def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Doc
 
     print(title)
 
-    content = extract_html(html)
+    html_content = extract_html(html)
 
-    print(content)
-
-    content = clean(_to_markdown(html, base_url=url)) if html else ""
+    content = clean(_to_markdown(html_content, base_url=url)) if html_content else ""
 
     metadata = {
         "url": url,
@@ -89,3 +85,4 @@ class PodcastsLoader(BaseLoader):
 
             docs.append(doc)
         return docs
+
