@@ -17,7 +17,6 @@ def load_dc_people(url: str, html: str, bs_parser: str = "html.parser") -> Docum
     """Load dc people from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
     title = soup.find("h1", class_="elementor-heading-title").text
-    author = soup.find("h2", class_="elementor-heading-title").text
 
     body = soup.find("div", class_="elementor-element-7c4c46d2")
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
@@ -25,7 +24,6 @@ def load_dc_people(url: str, html: str, bs_parser: str = "html.parser") -> Docum
     metadata = {
         "url": url,
         "title": clean(title) if title else "",
-        "author": clean(author) if author else "",
     }
     return Document(page_content=content, metadata=metadata)
 

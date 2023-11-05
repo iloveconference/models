@@ -3,7 +3,7 @@
 import json
 import os
 from typing import Iterator
-from urllib.parse import urlparse
+from typing import Optional
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
@@ -14,38 +14,48 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
+def extract_title(soup: BeautifulSoup) -> Optional[str]:
+    """Extract the title from the page."""
+    # get the first section
+    section = soup.find("section")
+    # get the second div with class elementor-col-50
+    divs = section.find_all("div", class_="elementor-col-50")
+    if len(divs) < 2:
+        return None
+    # get the third h2 from this div
+    h2s = divs[1].find_all("h2")
+    if len(h2s) < 3:
+        return None
+    # get the text from this h2
+    return h2s[2].text
+
+
+def extract_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
+    """Extract the HTML content from the page."""
+    # Find all sections
+    sections = soup.find_all("section")
+
+    # check that there are at least 5 sections
+    if len(sections) < 5:
+        return None
+
+    # return the sixth section
+    return sections[4]
+
+
 def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load dc podcasts from a url and html."""
-    path_components = urlparse(url).path.split("/")
-    title = path_components[-1]
-    title = title.replace("-", " ")
-    title = title.capitalize()
+    soup = BeautifulSoup(html, "html.parser")
+    title = extract_title(soup)
+    content = extract_content(soup)
 
-    print(title)
-
-    html_content = extract_html(html)
-
-    content = clean(to_markdown(html_content, base_url=url)) if html_content else ""
+    content = clean(to_markdown(str(content), base_url=url)) if content else ""
 
     metadata = {
         "url": url,
         "title": clean(title) if title else "",
     }
     return Document(page_content=content, metadata=metadata)
-
-
-def extract_html(html: str) -> str:
-    """Extract the HTML content from the page."""
-    hrefs = []
-    htmls = ""
-    # Parse the HTML content using BeautifulSoup
-    soup = BeautifulSoup(html, "html.parser")
-    # Find all div tags with the class 'views-field-title'
-    links = soup.find_all("div", class_="elementor-element-dc21b84")
-    for item in links:
-        hrefs.append(item.prettify())
-    htmls = "".join(hrefs)
-    return htmls
 
 
 class PodcastsLoader(BaseLoader):

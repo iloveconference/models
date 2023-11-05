@@ -11,8 +11,9 @@ from markdownify import MarkdownConverter  # type: ignore
 
 def clean(text: str) -> str:
     """Replace non-breaking space with normal space and remove surrounding whitespace."""
-    text = text.replace(" ", " ")
+    text = text.replace(" ", " ").replace("\u200b", "").replace("\u200a", " ")
     text = re.sub(r"(\n\s*)+\n", "\n\n", text)
+    text = re.sub(r" +\n", "\n", text)
     return text.strip()
 
 
