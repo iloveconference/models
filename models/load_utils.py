@@ -1,6 +1,7 @@
 """Utility functions for loading and saving data."""
 
 import json
+import re
 from typing import Iterable
 
 from langchain.schema.document import Document
@@ -8,7 +9,9 @@ from langchain.schema.document import Document
 
 def clean(text: str) -> str:
     """Replace non-breaking space with normal space and remove surrounding whitespace."""
-    return text.replace(" ", " ").strip()
+    text = text.replace(" ", " ")
+    text = re.sub(r"(\n\s*)+\n", "\n\n", text)
+    return text.strip()
 
 
 def save_docs_to_jsonl(array: Iterable[Document], file_path: str) -> None:
