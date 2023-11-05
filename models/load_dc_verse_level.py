@@ -1,7 +1,8 @@
-"""Load knowhys."""
+"""Load D&C Verse-Level Commentary."""
 
 import json
 import os
+import re
 from typing import Iterator
 from typing import Optional
 from typing import cast
@@ -18,7 +19,14 @@ from models.load_utils import clean
 # Create shorthand method for custom conversion
 def _to_markdown(html: str, base_url: str) -> str:
     """Convert html to markdown."""
-    return cast(str, MarkdownConverter(heading_style="ATX", base_url=base_url).convert(html))
+    return cast(
+        str,
+        MarkdownConverter(
+            heading_style="ATX",
+            strip=["script", "style"],
+            base_url=base_url,
+        ).convert(html),
+    )
 
 
 def get_title(soup: BeautifulSoup) -> Optional[str]:
@@ -27,17 +35,16 @@ def get_title(soup: BeautifulSoup) -> Optional[str]:
     first_section = soup.find("section")
 
     # Check if a <section> element was found
-    if first_section:
-        # Find the first <h2> element within the <section>
-        first_h2 = first_section.find("h2")
+    if not first_section:
+        return None
 
-        # Check if a <h2> element was found within the <section>
-        if first_h2:
-            return str(first_h2.get_text())  # Return the text of the first <h2> element
-        else:
-            return None  # No <h2> element found within the <section>
-    else:
-        return None  # No <section> element found in the HTML
+    # Find the first <h2> element within the <section>
+    first_h2 = first_section.find("h2")
+
+    if not first_h2:
+        return None
+
+    return str(first_h2.get_text())  # Return the text of the first <h2> element
 
 
 def get_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
@@ -46,20 +53,28 @@ def get_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
     sections = soup.find_all("section")
 
     # Check if there are at least three <section> elements
-    if len(sections) >= 3:
-        # Return the third <section> element
-        return sections[2]
+    if len(sections) < 3:
+        return None
 
-    else:
-        return None  # Less than three <section> elements found in the HTML
+    # Return the first div with class elementor-widget inside the third section
+    div = sections[2].find("div", class_="elementor-widget")
+    return div
 
 
-def load_historical_context(url: str, html: str, bs_parser: str = "html.parser") -> Document:
+def convert_verses_to_headings(content: str) -> str:
+    """Convert Verse N or Verses X-Y to level 2 markdown headings."""
+    content = re.sub(r"(?:^|\n) *Verse (\d+) *\n", r"\n## Verse \1\n", content)
+    content = re.sub(r"(?:^|\n) *Verses (\d+)-(\d+) *\n", r"\n## Verses \1-\2\n", content)
+    return content.strip()
+
+
+def load_dc_verse_level(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load knowhys from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
     title = get_title(soup)
     body = get_content(soup)
     content = clean(_to_markdown(str(body), base_url=url)) if body else ""
+    content = convert_verses_to_headings(content)
 
     metadata = {
         "url": url,
@@ -68,7 +83,7 @@ def load_historical_context(url: str, html: str, bs_parser: str = "html.parser")
     return Document(page_content=content, metadata=metadata)
 
 
-class HistoricalLoader(BaseLoader):
+class DcVerseLoader(BaseLoader):
     """Loader for General Conference Talks."""
 
     def lazy_load(self) -> Iterator[Document]:
@@ -88,7 +103,7 @@ class HistoricalLoader(BaseLoader):
             path = os.path.join(self.path, filename)
             with open(path, encoding="utf8") as f:
                 data = json.load(f)
-            doc = load_historical_context(data["url"], data["html"], bs_parser=self.bs_parser)
+            doc = load_dc_verse_level(data["url"], data["html"], bs_parser=self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
                     print("Missing title or content - skipping", filename)
