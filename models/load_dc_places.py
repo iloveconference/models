@@ -15,7 +15,7 @@ from tqdm import tqdm
 from models.load_utils import clean
 
 
-def places_clean(text):
+def places_clean(text: str) -> str:
     """Make key points a level 3 heading."""
     text = clean(text)
     text = text.replace("## Key Points", "### Key Points")
@@ -28,7 +28,7 @@ def _to_markdown(html: str, base_url: str) -> str:
     return cast(str, MarkdownConverter(heading_style="ATX", base_url=base_url).convert(html))
 
 
-def replace_header_with_year(text):
+def replace_header_with_year(text: str) -> str:
     """Define a regular expression pattern to match any year range."""
     year_pattern = re.compile(r"\b\d{4}\s*-\s*\d{4}\b")  # Matches year ranges like 1828-1830, 1823 - 1830, etc.
 
