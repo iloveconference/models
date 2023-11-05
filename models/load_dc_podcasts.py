@@ -5,14 +5,13 @@ import os
 from typing import Any
 from typing import Iterator
 from typing import cast
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
-
-from urllib.parse import urljoin, urlparse
 
 from models.load_utils import clean
 
@@ -25,10 +24,9 @@ def _to_markdown(html: str, **options: Any) -> str:
 
 def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load dc podcasts from a url and html."""
-
-    path_components = urlparse(url).path.split('/')
+    path_components = urlparse(url).path.split("/")
     title = path_components[-1]
-    title = title.replace('-',' ')
+    title = title.replace("-", " ")
     title = title.capitalize()
 
     print(title)
@@ -44,16 +42,17 @@ def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Doc
     return Document(page_content=content, metadata=metadata)
 
 
-def extract_html(html):
+def extract_html(html: str) -> str:
+    """Extract the HTML content from the page."""
     hrefs = []
-    htmls = ''
+    htmls = ""
     # Parse the HTML content using BeautifulSoup
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
     # Find all div tags with the class 'views-field-title'
-    links = soup.find_all('div', class_ = 'elementor-element-dc21b84')
+    links = soup.find_all("div", class_="elementor-element-dc21b84")
     for item in links:
         hrefs.append(item.prettify())
-    htmls = ''.join(hrefs)
+    htmls = "".join(hrefs)
     return htmls
 
 
@@ -85,4 +84,3 @@ class PodcastsLoader(BaseLoader):
 
             docs.append(doc)
         return docs
-
