@@ -66,6 +66,8 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
             text = places_clean(_to_markdown(str(section), base_url=url)) if section else ""
             text = replace_header_with_year(text)
             # print('text:',text)
+            if text == "## ":
+                continue
             body.append(text)
     content = "\n\n--------\n\n".join(body)
     metadata = {
