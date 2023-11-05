@@ -3,6 +3,7 @@
 import json
 import os
 from typing import Iterator
+from typing import Optional
 from typing import cast
 
 from bs4 import BeautifulSoup  # type: ignore
@@ -20,7 +21,7 @@ def _to_markdown(html: str, base_url: str) -> str:
     return cast(str, MarkdownConverter(heading_style="ATX", base_url=base_url).convert(html))
 
 
-def get_title(soup):
+def get_title(soup: BeautifulSoup) -> Optional[str]:
     """Gets page title."""
     # Find the first <section> element
     first_section = soup.find("section")
@@ -32,14 +33,14 @@ def get_title(soup):
 
         # Check if a <h2> element was found within the <section>
         if first_h2:
-            return first_h2.get_text()  # Return the text of the first <h2> element
+            return str(first_h2.get_text())  # Return the text of the first <h2> element
         else:
             return None  # No <h2> element found within the <section>
     else:
         return None  # No <section> element found in the HTML
 
 
-def get_content(soup):
+def get_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
     """Gets page content."""
     # Find all <section> elements in the HTML
     sections = soup.find_all("section")
