@@ -2,24 +2,16 @@
 
 import json
 import os
-from typing import Any
 from typing import Iterator
-from typing import cast
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
-from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
 
 from models.load_utils import clean
-
-
-# Create shorthand method for custom conversion
-def _to_markdown(html: str, **options: Any) -> str:
-    """Convert html to markdown."""
-    return cast(str, MarkdownConverter(**options).convert(html))
+from models.load_utils import to_markdown
 
 
 def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Document:
@@ -33,7 +25,7 @@ def load_dc_podcasts(url: str, html: str, bs_parser: str = "html.parser") -> Doc
 
     html_content = extract_html(html)
 
-    content = clean(_to_markdown(html_content, base_url=url)) if html_content else ""
+    content = clean(to_markdown(html_content, base_url=url)) if html_content else ""
 
     metadata = {
         "url": url,

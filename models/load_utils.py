@@ -3,8 +3,10 @@
 import json
 import re
 from typing import Iterable
+from typing import cast
 
 from langchain.schema.document import Document
+from markdownify import MarkdownConverter  # type: ignore
 
 
 def clean(text: str) -> str:
@@ -12,6 +14,18 @@ def clean(text: str) -> str:
     text = text.replace(" ", " ")
     text = re.sub(r"(\n\s*)+\n", "\n\n", text)
     return text.strip()
+
+
+def to_markdown(html: str, base_url: str) -> str:
+    """Convert html to markdown."""
+    return cast(
+        str,
+        MarkdownConverter(
+            heading_style="ATX",
+            strip=["script", "style"],
+            base_url=base_url,
+        ).convert(html),
+    )
 
 
 def save_docs_to_jsonl(array: Iterable[Document], file_path: str) -> None:

@@ -5,28 +5,14 @@ import os
 import re
 from typing import Iterator
 from typing import Optional
-from typing import cast
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
-from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
 
 from models.load_utils import clean
-
-
-# Create shorthand method for custom conversion
-def _to_markdown(html: str, base_url: str) -> str:
-    """Convert html to markdown."""
-    return cast(
-        str,
-        MarkdownConverter(
-            heading_style="ATX",
-            strip=["script", "style"],
-            base_url=base_url,
-        ).convert(html),
-    )
+from models.load_utils import to_markdown
 
 
 def get_title(soup: BeautifulSoup) -> Optional[str]:
@@ -73,7 +59,7 @@ def load_dc_verse_level(url: str, html: str, bs_parser: str = "html.parser") -> 
     soup = BeautifulSoup(html, bs_parser)
     title = get_title(soup)
     body = get_content(soup)
-    content = clean(_to_markdown(str(body), base_url=url)) if body else ""
+    content = clean(to_markdown(str(body), base_url=url)) if body else ""
     content = convert_verses_to_headings(content)
 
     metadata = {

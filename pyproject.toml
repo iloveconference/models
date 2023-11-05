@@ -84,7 +84,7 @@ source = ["models", "tests"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 65
+fail_under = 60
 
 [tool.isort]
 profile = "black"

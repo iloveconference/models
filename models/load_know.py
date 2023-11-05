@@ -2,23 +2,15 @@
 
 import json
 import os
-from typing import Any
 from typing import Iterator
-from typing import cast
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
-from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
 
 from models.load_utils import clean
-
-
-# Create shorthand method for custom conversion
-def _to_markdown(html: str, **options: Any) -> str:
-    """Convert html to markdown."""
-    return cast(str, MarkdownConverter(**options).convert(html))
+from models.load_utils import to_markdown
 
 
 def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document:
@@ -29,14 +21,14 @@ def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document
     date = soup.find("div", class_="field-name-publish-date").text
     citation = soup.find(id="block-views-knowhy-citation-block")
     body = soup.find("div", class_="group-left")
-    content = clean(_to_markdown(str(body), base_url=url)) if body else ""
+    content = clean(to_markdown(str(body), base_url=url)) if body else ""
 
     metadata = {
         "url": url,
         "title": clean(title) if title else "",
         "author": clean(author) if author else "",
         "date": clean(date) if date else "",
-        "citation": clean(_to_markdown(str(citation), base_url=url)) if citation else "",
+        "citation": clean(to_markdown(str(citation), base_url=url)) if citation else "",
     }
     return Document(page_content=content, metadata=metadata)
 

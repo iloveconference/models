@@ -4,15 +4,14 @@ import json
 import os
 import re
 from typing import Iterator
-from typing import cast
 
 from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
-from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
 
 from models.load_utils import clean
+from models.load_utils import to_markdown
 
 
 def places_clean(text: str) -> str:
@@ -20,12 +19,6 @@ def places_clean(text: str) -> str:
     text = clean(text)
     text = text.replace("## Key Points", "### Key Points")
     return text
-
-
-# Create shorthand method for custom conversion
-def _to_markdown(html: str, base_url: str) -> str:
-    """Convert html to markdown."""
-    return cast(str, MarkdownConverter(heading_style="ATX", base_url=base_url).convert(html))
 
 
 def replace_header_with_year(text: str) -> str:
@@ -63,7 +56,7 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
             and not any("Directions to" in tag.text for tag in section.find_all("h2"))
             and not section.find("a", href=True)
         ):
-            text = places_clean(_to_markdown(str(section), base_url=url)) if section else ""
+            text = places_clean(to_markdown(str(section), base_url=url)) if section else ""
             text = replace_header_with_year(text)
             # print('text:',text)
             if text == "## ":
