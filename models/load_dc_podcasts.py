@@ -10,8 +10,7 @@ from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
 
-from models.load_utils import clean
-from models.load_utils import to_markdown
+from models.load_utils import clean, to_markdown
 
 
 def extract_title(soup: BeautifulSoup) -> Optional[str]:

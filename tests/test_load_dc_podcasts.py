@@ -1,4 +1,4 @@
-"""Test cases for the load_know module."""
+"""Test cases for the load_dc_podcasts module."""
 # flake8: noqa
 
 from models.load_dc_podcasts import load_dc_podcasts
@@ -1372,7 +1372,7 @@ var ElementorProFrontendConfig = {"ajaxurl":"https:\\/\\/doctrineandcovenantscen
 """
 
 
-def test_load_dc_places() -> None:
+def test_load_dc_podcasts() -> None:
     """It returns a valid Document for a D&C podcast."""
     url = "https://doctrineandcovenantscentral.org/podcast-episode/why-are-there-different-accounts-of-the-first-vision%e2%80%8b/"
     result = load_dc_podcasts(url, html)
