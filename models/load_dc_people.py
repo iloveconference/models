@@ -53,8 +53,5 @@ class PeopleLoader(BaseLoader):
                 if verbose:
                     print("Missing title or content - skipping", filename)
                 continue
-            if not doc.metadata["author"]:
-                if verbose:
-                    print("Missing author", filename)
             docs.append(doc)
         return docs

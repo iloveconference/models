@@ -27,7 +27,7 @@ def embed_documents(embedder: Any, docs: list[Document], batch_size: int = 100, 
         time.sleep(delay)
         # set end position of batch
         i_end = min(i + batch_size, len(docs))
-        text_batch = [doc.page_content for doc in docs[i:i_end]]
+        text_batch = [f"{doc.metadata['title']}\n\n{doc.page_content}" for doc in docs[i:i_end]]
         embed_batch = embedder.embed_documents(text_batch)
         embeddings.extend(embed_batch)
     return embeddings
