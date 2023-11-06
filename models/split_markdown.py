@@ -3,6 +3,7 @@
 import re
 from typing import Any
 from typing import Callable
+from typing import Optional
 from typing import Sequence
 from typing import Sized
 
@@ -24,7 +25,7 @@ class RecursiveMarkdownTextSplitter(BaseDocumentTransformer):
 
     def __init__(
         self,
-        headers_to_split_on: list[tuple[str, str]] = None,
+        headers_to_split_on: Optional[list[tuple[str, str]]] = None,
         title_header_separator: str = " ",
         chunk_size: int = 2000,
         chunk_overlap: int = 200,

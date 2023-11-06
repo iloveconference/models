@@ -27,7 +27,7 @@ def extract_title(soup: BeautifulSoup) -> Optional[str]:
     if len(h2s) < 3:
         return None
     # get the text from this h2
-    return h2s[2].text
+    return str(h2s[2].text)
 
 
 def extract_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
