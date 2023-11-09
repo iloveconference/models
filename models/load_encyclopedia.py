@@ -1,10 +1,9 @@
-"""Load knowhys."""
-
+"""Load encyclopedia."""
 import json
 import os
 from typing import Iterator
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
@@ -13,28 +12,28 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
-def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document:
-    """Load knowhys from a url and html."""
+def load_encyclopedia(url: str, html: str, bs_parser: str = "html.parser") -> Document:
+    """Load encyclopedia from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.find("h1", class_="page-title").text
-    author = soup.find("div", class_="field-nam-author").text.replace("Post contributed by", "")
-    date = soup.find("div", class_="field-name-publish-date").text
-    citation = soup.find(id="block-views-knowhy-citation-block")
-    body = soup.find("div", class_="group-left")
+    title = soup.find("span", class_="mw-page-title-main").text
+    # author = soup.find("div", class_="mw-body").text.replace("Post contributed by", "")
+    # date = soup.find("div", class_="mw-body").text
+    # citation = soup.find(id="content")
+    body = soup.find("div", class_="mw-parser-output").text
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
 
     metadata = {
         "url": url,
         "title": clean(title) if title else "",
-        "author": clean(author) if author else "",
-        "date": clean(date) if date else "",
-        "citation": clean(to_markdown(str(citation), base_url=url)) if citation else "",
+        # "author": clean(author) if author else "",
+        # "date": clean(date) if date else "",
+        # "citation": clean(to_markdown(str(citation), base_url=url)) if citation else "",
     }
     return Document(page_content=content, metadata=metadata)
 
 
-class KnowhyLoader(BaseLoader):
-    """Loader for General Conference Talks."""
+class EncyclopediaLoader(BaseLoader):
+    """Loader for General Encyclopedia."""
 
     def lazy_load(self) -> Iterator[Document]:
         """A lazy loader for Documents."""
@@ -53,13 +52,13 @@ class KnowhyLoader(BaseLoader):
             path = os.path.join(self.path, filename)
             with open(path, encoding="utf8") as f:
                 data = json.load(f)
-            doc = load_knowhy(data["url"], data["html"], bs_parser=self.bs_parser)
+            doc = load_encyclopedia(data["url"], data["html"], bs_parser=self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
                     print("Missing title or content - skipping", filename)
                 continue
-            if not doc.metadata["author"]:
-                if verbose:
-                    print("Missing author", filename)
+            # if not doc.metadata["author"]:
+            #     if verbose:
+            #         print("Missing author", filename)
             docs.append(doc)
         return docs
