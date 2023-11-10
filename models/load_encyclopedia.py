@@ -3,7 +3,7 @@ import json
 import os
 from typing import Iterator
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # type: ignore
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
