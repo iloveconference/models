@@ -2,25 +2,25 @@
 
 import json
 import os
+from typing import Any
 from typing import Iterator
-from typing import Optional
 
 from bs4 import BeautifulSoup
-from bs4 import NavigableString
 from bs4 import Tag
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
 
 from models.load_utils import clean
-from models.load_utils import get_text
 from models.load_utils import to_markdown
 
 
-def extract_title(soup: Tag) -> Optional[str]:
+def extract_title(soup: BeautifulSoup) -> Any:
     """Extract the title from the page."""
     # get the first section
     section = soup.find("section")
+    if not isinstance(section, Tag):
+        return None
     # get the second div with class elementor-col-50
     divs = section.find_all("div", class_="elementor-col-50")
     if len(divs) < 2:
@@ -29,11 +29,11 @@ def extract_title(soup: Tag) -> Optional[str]:
     h2s = divs[1].find_all("h2")
     if len(h2s) < 3:
         return None
-    # get the text from this h2
-    return get_text(h2s[2])
+    # return the third h2
+    return h2s[2]
 
 
-def extract_content(soup: Tag) -> Tag | NavigableString | None:
+def extract_content(soup: BeautifulSoup) -> Any:
     """Extract the HTML content from the page."""
     # Find all sections
     sections = soup.find_all("section")

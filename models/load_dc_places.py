@@ -11,7 +11,6 @@ from langchain.schema.document import Document
 from tqdm import tqdm
 
 from models.load_utils import clean
-from models.load_utils import get_text
 from models.load_utils import to_markdown
 
 
@@ -41,8 +40,7 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
     """Load dc places from a url and html."""
     body = []
     soup = BeautifulSoup(html, bs_parser)
-    title = get_text(soup.find("div", class_="elementor-text-editor"))
-    title = title.replace("/", "", 1)
+    title = clean(soup.find("div", class_="elementor-text-editor")).replace("/", "", 1)
     sections = soup.find_all("section", class_="has_eae_slider")
     for section in sections:
         if (

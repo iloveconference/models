@@ -15,7 +15,6 @@ from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
 
 from models.load_utils import clean
-from models.load_utils import get_text
 
 
 class ConferenceMarkdownConverter(MarkdownConverter):  # type: ignore
@@ -51,9 +50,9 @@ def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") ->
     path_components = urlparse(url).path.split("/")
     year, month = path_components[3:5]
     soup = BeautifulSoup(html, bs_parser)
-    title = get_text(soup.select_one("article header h1"))
-    author = get_text(soup.select_one("article p.author-name"))
-    author_role = get_text(soup.select_one("article p.author-role"))
+    title = soup.select_one("article header h1")
+    author = soup.select_one("article p.author-name")
+    author_role = soup.select_one("article p.author-role")
     body = soup.select_one("article div.body-block")
     content = clean(_to_markdown(str(body), base_url=url)) if body else ""
     metadata = {

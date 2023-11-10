@@ -2,12 +2,10 @@
 
 import json
 import os
+from typing import Any
 from typing import Iterator
-from typing import Optional
 
 from bs4 import BeautifulSoup
-from bs4 import NavigableString
-from bs4 import Tag
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
@@ -16,7 +14,7 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
-def get_title(soup: Tag) -> Optional[str]:
+def get_title(soup: BeautifulSoup) -> Any:
     """Gets page title."""
     # Find the first <section> element
     first_section = soup.find("section")
@@ -28,14 +26,14 @@ def get_title(soup: Tag) -> Optional[str]:
 
         # Check if a <h2> element was found within the <section>
         if first_h2:
-            return str(first_h2.get_text())  # Return the text of the first <h2> element
+            return first_h2  # Return the first <h2> element
         else:
             return None  # No <h2> element found within the <section>
     else:
         return None  # No <section> element found in the HTML
 
 
-def get_content(soup: Tag) -> Tag | NavigableString | None:
+def get_content(soup: BeautifulSoup) -> Any:
     """Gets page content."""
     # Find all <section> elements in the HTML
     sections = soup.find_all("section")
