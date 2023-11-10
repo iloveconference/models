@@ -41,6 +41,7 @@ tiktoken = "^0.5.1"
 types-requests = "^2.31.0.8"
 pre-commit = "^3.4.0"
 pypdf = "^3.17.0"
+cryptography = "^41.0.5"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
