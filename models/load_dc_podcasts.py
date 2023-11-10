@@ -5,16 +5,19 @@ import os
 from typing import Iterator
 from typing import Optional
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
+from bs4 import NavigableString
+from bs4 import Tag
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
 
 from models.load_utils import clean
+from models.load_utils import get_text
 from models.load_utils import to_markdown
 
 
-def extract_title(soup: BeautifulSoup) -> Optional[str]:
+def extract_title(soup: Tag) -> Optional[str]:
     """Extract the title from the page."""
     # get the first section
     section = soup.find("section")
@@ -27,10 +30,10 @@ def extract_title(soup: BeautifulSoup) -> Optional[str]:
     if len(h2s) < 3:
         return None
     # get the text from this h2
-    return str(h2s[2].text)
+    return get_text(h2s[2])
 
 
-def extract_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
+def extract_content(soup: Tag) -> Tag | NavigableString | None:
     """Extract the HTML content from the page."""
     # Find all sections
     sections = soup.find_all("section")

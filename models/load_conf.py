@@ -8,13 +8,14 @@ from typing import cast
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
 
 from models.load_utils import clean
+from models.load_utils import get_text
 
 
 class ConferenceMarkdownConverter(MarkdownConverter):  # type: ignore
@@ -50,18 +51,18 @@ def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") ->
     path_components = urlparse(url).path.split("/")
     year, month = path_components[3:5]
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.select_one("article header h1")
-    author = soup.select_one("article p.author-name")
-    author_role = soup.select_one("article p.author-role")
+    title = get_text(soup.select_one("article header h1"))
+    author = get_text(soup.select_one("article p.author-name"))
+    author_role = get_text(soup.select_one("article p.author-role"))
     body = soup.select_one("article div.body-block")
     content = clean(_to_markdown(str(body), base_url=url)) if body else ""
     metadata = {
         "year": year,
         "month": month,
         "url": url,
-        "title": clean(title.text) if title else "",
-        "author": clean(author.text) if author else "",
-        "author_role": clean(author_role.text) if author_role else "",
+        "title": clean(title) if title else "",
+        "author": clean(author) if author else "",
+        "author_role": clean(author_role) if author_role else "",
     }
     return Document(page_content=content, metadata=metadata)
 

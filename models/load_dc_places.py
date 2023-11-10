@@ -5,12 +5,13 @@ import os
 import re
 from typing import Iterator
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
 
 from models.load_utils import clean
+from models.load_utils import get_text
 from models.load_utils import to_markdown
 
 
@@ -40,7 +41,7 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
     """Load dc places from a url and html."""
     body = []
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.find("div", class_="elementor-text-editor").text
+    title = get_text(soup.find("div", class_="elementor-text-editor"))
     title = title.replace("/", "", 1)
     sections = soup.find_all("section", class_="has_eae_slider")
     for section in sections:

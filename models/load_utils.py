@@ -5,6 +5,8 @@ import re
 from typing import Iterable
 from typing import cast
 
+from bs4 import NavigableString
+from bs4 import Tag
 from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
 
@@ -15,6 +17,11 @@ def clean(text: str) -> str:
     text = re.sub(r"(\n\s*)+\n", "\n\n", text)
     text = re.sub(r" +\n", "\n", text)
     return text.strip()
+
+
+def get_text(soup: Tag | NavigableString | None) -> str:
+    """Get the text if its not none otherwise return empty string."""
+    return "" if soup is None else soup.text
 
 
 def to_markdown(html: str, base_url: str) -> str:

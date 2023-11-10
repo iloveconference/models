@@ -6,16 +6,19 @@ import re
 from typing import Iterator
 from typing import Optional
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
+from bs4 import NavigableString
+from bs4 import Tag
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
 
 from models.load_utils import clean
+from models.load_utils import get_text
 from models.load_utils import to_markdown
 
 
-def get_title(soup: BeautifulSoup) -> Optional[str]:
+def get_title(soup: Tag) -> Optional[str]:
     """Gets page title."""
     # Find the first <section> element
     first_section = soup.find("section")
@@ -30,10 +33,10 @@ def get_title(soup: BeautifulSoup) -> Optional[str]:
     if not first_h2:
         return None
 
-    return str(first_h2.get_text())  # Return the text of the first <h2> element
+    return get_text(first_h2)  # Return the text of the first <h2> element
 
 
-def get_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
+def get_content(soup: Tag) -> Tag | NavigableString | None:
     """Gets page content."""
     # Find all <section> elements in the HTML
     sections = soup.find_all("section")
