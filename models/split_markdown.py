@@ -33,7 +33,7 @@ class RecursiveMarkdownTextSplitter(BaseDocumentTransformer):
         **kwargs: Any
     ):
         """Initialize markdown header and recursive character text splitters."""
-        super(BaseDocumentTransformer, self).__init__(**kwargs)
+        super(BaseDocumentTransformer, self).__init__()
 
         if headers_to_split_on is None:
             headers_to_split_on = [("##", "Header 2")]
