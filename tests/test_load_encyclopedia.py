@@ -309,4 +309,4 @@ def test_load_encyclopedia() -> None:
     assert len(result.page_content) > 0
     assert result.metadata["url"] == url
     assert result.metadata["title"] == '"Fundamentalists"'
-    assert result.page_content.startswith("See this page")
+    assert result.page_content.startswith("[See this page")

@@ -15,11 +15,11 @@ from models.load_utils import to_markdown
 def load_encyclopedia(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load encyclopedia from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.find("span", class_="mw-page-title-main").text
+    title = soup.find("span", class_="mw-page-title-main")
     # author = soup.find("div", class_="mw-body").text.replace("Post contributed by", "")
     # date = soup.find("div", class_="mw-body").text
     # citation = soup.find(id="content")
-    body = soup.find("div", class_="mw-parser-output").text
+    body = soup.find("div", class_="mw-parser-output")
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
 
     metadata = {

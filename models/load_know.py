@@ -4,7 +4,7 @@ import json
 import os
 from typing import Iterator
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
@@ -16,9 +16,9 @@ from models.load_utils import to_markdown
 def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load knowhys from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.find("h1", class_="page-title").text
-    author = soup.find("div", class_="field-nam-author").text.replace("Post contributed by", "")
-    date = soup.find("div", class_="field-name-publish-date").text
+    title = soup.find("h1", class_="page-title")
+    author = clean(soup.find("div", class_="field-nam-author")).replace("Post contributed by", "")
+    date = soup.find("div", class_="field-name-publish-date")
     citation = soup.find(id="block-views-knowhy-citation-block")
     body = soup.find("div", class_="group-left")
     content = clean(to_markdown(str(body), base_url=url)) if body else ""

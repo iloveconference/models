@@ -8,7 +8,7 @@ from typing import cast
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
@@ -59,9 +59,9 @@ def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") ->
         "year": year,
         "month": month,
         "url": url,
-        "title": clean(title.text) if title else "",
-        "author": clean(author.text) if author else "",
-        "author_role": clean(author_role.text) if author_role else "",
+        "title": clean(title) if title else "",
+        "author": clean(author) if author else "",
+        "author_role": clean(author_role) if author_role else "",
     }
     return Document(page_content=content, metadata=metadata)
 

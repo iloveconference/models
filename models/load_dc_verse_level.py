@@ -3,10 +3,10 @@
 import json
 import os
 import re
+from typing import Any
 from typing import Iterator
-from typing import Optional
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
@@ -15,7 +15,7 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
-def get_title(soup: BeautifulSoup) -> Optional[str]:
+def get_title(soup: BeautifulSoup) -> Any:
     """Gets page title."""
     # Find the first <section> element
     first_section = soup.find("section")
@@ -27,13 +27,10 @@ def get_title(soup: BeautifulSoup) -> Optional[str]:
     # Find the first <h2> element within the <section>
     first_h2 = first_section.find("h2")
 
-    if not first_h2:
-        return None
-
-    return str(first_h2.get_text())  # Return the text of the first <h2> element
+    return first_h2
 
 
-def get_content(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
+def get_content(soup: BeautifulSoup) -> Any:
     """Gets page content."""
     # Find all <section> elements in the HTML
     sections = soup.find_all("section")

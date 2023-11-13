@@ -2,19 +2,28 @@
 
 import json
 import re
+from typing import Any
 from typing import Iterable
 from typing import cast
 
+from bs4 import Tag
 from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
 
 
-def clean(text: str) -> str:
+def clean(text: Any) -> str:
+    """Convert text to a string and clean it."""
+    if text is None:
+        return ""
+    if isinstance(text, Tag):
+        text = text.text
+    if not isinstance(text, str):
+        text = str(text)
     """Replace non-breaking space with normal space and remove surrounding whitespace."""
     text = text.replace(" ", " ").replace("\u200b", "").replace("\u200a", " ")
     text = re.sub(r"(\n\s*)+\n", "\n\n", text)
     text = re.sub(r" +\n", "\n", text)
-    return text.strip()
+    return cast(str, text.strip())
 
 
 def to_markdown(html: str, base_url: str) -> str:
