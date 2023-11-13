@@ -1,4 +1,5 @@
-"""Load encyclopedia."""
+"""Load Pearl of Great Price."""
+
 import json
 import os
 from typing import Iterator
@@ -12,28 +13,25 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
-def load_encyclopedia(url: str, html: str, bs_parser: str = "html.parser") -> Document:
-    """Load encyclopedia from a url and html."""
+def load_pogp(url: str, html: str, bs_parser: str = "html.parser") -> Document:
+    """Load Pearl of Great Price from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.find("span", class_="mw-page-title-main")
-    # author = soup.find("div", class_="mw-body").text.replace("Post contributed by", "")
-    # date = soup.find("div", class_="mw-body").text
-    # citation = soup.find(id="content")
-    body = soup.find("div", class_="mw-parser-output")
-    content = clean(to_markdown(str(body), base_url=url)) if body else ""
+    title = soup.find("h1", class_="entry-title").text
+    # title = title.replace("/", "", 1)
+    body = soup.find("div", class_="entry-content")
 
+    content = clean(to_markdown(str(body), base_url=url)) if body else ""
+    content = content.split("\n\n#### Further Reading\n\n")[0]
     metadata = {
         "url": url,
         "title": clean(title) if title else "",
         # "author": clean(author) if author else "",
-        # "date": clean(date) if date else "",
-        # "citation": clean(to_markdown(str(citation), base_url=url)) if citation else "",
     }
     return Document(page_content=content, metadata=metadata)
 
 
-class EncyclopediaLoader(BaseLoader):
-    """Loader for General Encyclopedia."""
+class POGPLoader(BaseLoader):
+    """Loader for Pearl of Great Price."""
 
     def lazy_load(self) -> Iterator[Document]:
         """A lazy loader for Documents."""
@@ -52,7 +50,7 @@ class EncyclopediaLoader(BaseLoader):
             path = os.path.join(self.path, filename)
             with open(path, encoding="utf8") as f:
                 data = json.load(f)
-            doc = load_encyclopedia(data["url"], data["html"], bs_parser=self.bs_parser)
+            doc = load_pogp(data["url"], data["html"], bs_parser=self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
                     print("Missing title or content - skipping", filename)
