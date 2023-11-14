@@ -1,7 +1,7 @@
-"""Test cases for the load_know module."""
+"""Test cases for fair module."""
 # flake8: noqa
 
-from models import load_fair
+from models.load_fairs import load_fairs
 
 
 html = """
@@ -12,7 +12,7 @@ html = """
 <meta charset="UTF-8"/>
 <title>Criticism of Mormonism/Online documents/Letter to a CES Director - FAIR</title>
 <script>document.documentElement.className = document.documentElement.className.replace( /(^|\\s)client-nojs(\\s|$)/, "$1client-js$2" );</script>
-<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Criticism_of_Mormonism/Online_documents/Letter_to_a_CES_Director","wgTitle":"Criticism of Mormonism/Online documents/Letter to a CES Director","wgCurRevisionId":221128,"wgRevisionId":221128,"wgArticleId":15446,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","FairMormon","Mormon","Mormonism","Subpages","Letter to a CES Director"],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgMonthNamesShort":["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"wgRelevantPageName":"Criticism_of_Mormonism/Online_documents/Letter_to_a_CES_Director","wgRelevantArticleId":15446,"wgRequestId":"1a6060100ee95efaa5b9364d","wgIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[]});mw.loader.state({"site.styles":"ready","noscript":"ready","user.styles":"ready","user.cssprefs":"ready","user":"ready","user.options":"loading","user.tokens":"loading","mediawiki.skinning.content.externallinks":"ready","skins.fairmormon":"ready","mediawiki.legacy.shared":"ready","mediawiki.legacy.commonPrint":"ready","mediawiki.sectionAnchor":"ready"});mw.loader.implement("user.options@0j3lz3q",function($,jQuery,require,module){mw.user.options.set({"variant":"en"});});mw.loader.implement("user.tokens@0kryo14",function ( $, jQuery, require, module ) {
+<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Criticism_of_Mormonism/Online_documents/Letter_to_a_CES_Director","wgTitle":"Criticism of Mormonism/Online documents/Letter to a CES Director","wgCurRevisionId":221128,"wgRevisionId":221128,"wgArticleId":15446,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using duplicate arguments in template calls","FairMormon","Mormon","Mormonism","Subpages","Letter to a CES Director"],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgMonthNamesShort":["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"wgRelevantPageName":"Criticism_of_Mormonism/Online_documents/Letter_to_a_CES_Director","wgRelevantArticleId":15446,"wgRequestId":"ef909c41bd2816778619aa65","wgIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[]});mw.loader.state({"site.styles":"ready","noscript":"ready","user.styles":"ready","user.cssprefs":"ready","user":"ready","user.options":"loading","user.tokens":"loading","mediawiki.skinning.content.externallinks":"ready","skins.fairmormon":"ready","mediawiki.legacy.shared":"ready","mediawiki.legacy.commonPrint":"ready","mediawiki.sectionAnchor":"ready"});mw.loader.implement("user.options@0j3lz3q",function($,jQuery,require,module){mw.user.options.set({"variant":"en"});});mw.loader.implement("user.tokens@0kryo14",function ( $, jQuery, require, module ) {
 mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});/*@nomin*/;
 
 });mw.loader.load(["mediawiki.page.startup"]);});</script>
@@ -675,17 +675,19 @@ Transclusion expansion time report (%,ms,calls,template)
   ga('send', 'pageview');
 
 </script>
-<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":31});});</script>		</body>
-
+<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":24});});</script>		</body>
 </html>
+
 """
 
 
-def test_load_fair() -> None:
-    """It returns a valid Document for a conference talk."""
-    url = "https://https://www.fairlatterdaysaints.org/answers/Special:AllPages"
-    result = load_fair.load_fair(url, html)
+def test_load_fairs() -> None:
+    """It returns a valid Document for a fair."""
+    url = "https://www.fairlatterdaysaints.org/answers/Criticism_of_Mormonism/Online_documents/Letter_to_a_CES_Director"
+    result = load_fairs(url, html)
+    expected_start = "**Summary**"
     assert len(result.page_content) > 0
     assert result.metadata["url"] == url
-    assert result.metadata["title"] == '"AllPages"'
-    assert result.page_content.startswith("Special:AllPages")
+    assert result.metadata["title"] == "Response to the CES Letter and Debunking FairMormon"
+    assert expected_start in result.page_content, f"Expected content to contain '{expected_start}', but it did not."
+    # assert result.page_content.startswith("**Summary**")
