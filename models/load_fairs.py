@@ -21,7 +21,7 @@ def load_fairs(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     # date = soup.find("div", class_="field-name-publish-date")
     # citation = soup.find(id="block-views-knowhy-citation-block")
     body = soup.find("div", id="mw-content-text")
-    # soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
     # content = soup.find(...)
     title = body.find("span", class_="mw-headline")
     title.extract()
