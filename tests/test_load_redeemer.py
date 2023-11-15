@@ -1603,5 +1603,5 @@ def test_load_redeemer() -> None:
     result = load_redeemer.load_redeemer(url, html)
     assert len(result.page_content) > 0
     assert result.metadata["url"] == url
-    assert result.metadata["title"] == '"Finding Christ in the Ark of the Covenant"'
-    assert result.page_content.startswith("[See this page")
+    assert result.metadata["title"] == "Finding Christ in the Ark of the Covenant"
+    assert result.page_content.startswith("[\n\nThe Ark")
