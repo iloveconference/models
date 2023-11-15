@@ -5,6 +5,7 @@ import os
 from typing import Iterator
 
 from bs4 import BeautifulSoup
+from bs4 import Tag
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
@@ -16,15 +17,17 @@ from models.load_utils import to_markdown
 def load_fairs(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load fairs from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
-    title = soup.find("span", class_="mw-headline")
     # author = clean(soup.find("div", class_="field-nam-author")).replace("Post contributed by", "")
     # date = soup.find("div", class_="field-name-publish-date")
     # citation = soup.find(id="block-views-knowhy-citation-block")
     body = soup.find("div", id="mw-content-text")
-    soup = BeautifulSoup(html, "html.parser")
     # content = soup.find(...)
-    title = body.find("span", class_="mw-headline")
-    title.extract()
+    if isinstance(body, Tag):
+        title = body.find("span", class_="mw-headline")
+    else:
+        title = None
+    if isinstance(title, Tag):
+        title.extract()
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
 
     metadata = {
