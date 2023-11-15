@@ -14,7 +14,7 @@ from models.load_utils import to_markdown
 
 
 def load_fairs(url: str, html: str, bs_parser: str = "html.parser") -> Document:
-    """Load knowhys from a url and html."""
+    """Load fairs from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
     title = soup.find("span", class_="mw-headline")
     # author = clean(soup.find("div", class_="field-nam-author")).replace("Post contributed by", "")
