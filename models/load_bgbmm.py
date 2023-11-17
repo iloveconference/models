@@ -5,6 +5,7 @@ import os
 from typing import Iterator
 
 from bs4 import BeautifulSoup
+from bs4 import Tag
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from tqdm import tqdm
@@ -19,8 +20,12 @@ def load_bgbmm(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     title = soup.find("h1", class_="page-title")
 
     body = soup.find("div", class_="accordion-content")
-    unwanted_text = soup.find("div", class_="accordion-content").find("h1").extract().get_text(strip=True)
-    print(unwanted_text)
+    if isinstance(body, Tag):
+        unwanted = body.find("h1")
+        if isinstance(unwanted, Tag):
+            unwanted.extract()
+            unwanted_text = unwanted.get_text(strip=True)
+            print(unwanted_text)
 
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
 
