@@ -1078,7 +1078,7 @@ def test_load_dc_places_extra() -> None:
     assert not result.page_content.startswith("## 1838")
 
 
-def test_remove_year_headers():
+def test_remove_year_headers() -> None:
     text = "## 1883"
     cleaned_text = remove_year_headers(text)
     assert cleaned_text == ""
