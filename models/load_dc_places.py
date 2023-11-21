@@ -9,6 +9,13 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
+def remove_h2_content(html_content):
+    """Remove date in h2 tag."""
+    pattern = re.compile(r'<h2 class="elementor-heading-title">(.*?)</h2>', re.DOTALL)
+    modified_html = re.sub(pattern, '<h2 class="elementor-heading-title"></h2>', html_content)
+    return modified_html
+
+
 def places_clean(text: str) -> str:
     """Make key points a level 3 heading."""
     text = clean(text)
