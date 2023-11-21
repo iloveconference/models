@@ -310,4 +310,4 @@ def test_load_encyclopedia() -> None:
     assert result.metadata["url"] == url
     assert result.metadata["title"] == '"Fundamentalists"'
     assert result.page_content.startswith("[See this page")
-    assert not result.page_content.startswith("[A](/index.php?")
+    assert "[A](/index.php?" not in result.page_content
