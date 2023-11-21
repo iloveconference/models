@@ -2,6 +2,7 @@
 # flake8: noqa
 
 from models.load_dc_places import load_dc_places
+from models.load_dc_places import remove_year_headers
 
 
 html = """
@@ -1074,7 +1075,10 @@ def test_load_dc_places_extra() -> None:
     assert len(result.page_content) > 0
     assert result.metadata["url"] == url
     assert result.metadata["title"] == "Places of the D&C / Adam-ondi-Ahman, Missouri"
-    assert result.page_content.startswith("## 1838")
+    assert not result.page_content.startswith("## 1838")
 
 
-# assert result.page_content.endswith("abandoned")
+def test_remove_year_headers():
+    text = "## 1883"
+    cleaned_text = remove_year_headers(text)
+    assert cleaned_text == ""
