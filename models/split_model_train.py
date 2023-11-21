@@ -30,12 +30,12 @@ def get_mpnet_embedder(
 
 def get_openai_embedder(
     openai: Any, engine: str = "text-embedding-ada-002"
-) -> Callable[[list[str]], Optional[list[NDArray[np.float32]]]]:
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
     """Get openai embeddings for paragraphs."""
     max_retries = 5
     backoff_factor = 2  # Exponential back-off factor
 
-    def embed(paragraphs: list[str]) -> Optional[list[ndarray[Any, dtype[single]]]]:
+    def embed(paragraphs: list[str]) -> list[ndarray[Any, dtype[single]]]:
         retry_delay = 1  # Initial delay in seconds
         for _ in range(max_retries):
             try:
@@ -51,8 +51,8 @@ def get_openai_embedder(
             except Exception as e:
                 # If a different exception is caught, re-raise it
                 raise e
-        # If all retries fail, return None
-        return None
+        # If all retries fail, throw an exception
+        raise Exception(f"Failed to create embedding after {max_retries} retries.")
 
     return embed
 
