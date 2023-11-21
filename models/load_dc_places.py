@@ -9,6 +9,16 @@ from models.load_utils import clean
 from models.load_utils import to_markdown
 
 
+def remove_year_headers(text: str) -> str:
+    """Define the regular expression pattern."""
+    pattern = r"## \d{4}(-\d{4})?(\s+-{3,})?"
+
+    # Use re.sub to replace matches with an empty string
+    cleaned_text = re.sub(pattern, "", text)
+
+    return cleaned_text
+
+
 def places_clean(text: str) -> str:
     """Make key points a level 3 heading."""
     text = clean(text)
@@ -52,6 +62,7 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
         ):
             text = places_clean(to_markdown(str(section), base_url=url)) if section else ""
             text = replace_header_with_year(text)
+            text = remove_year_headers(text)
             # print('text:',text)
             if text == "## ":
                 continue
