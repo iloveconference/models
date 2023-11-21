@@ -12,7 +12,7 @@ from models.load_utils import to_markdown
 line = "* [1.](#footnoteref1"
 
 
-def remove_text_below_footnote(line, text):
+def remove_text_below_footnote(line: str, text: str) -> str:
     """This function removes footnotes."""
     pattern = re.compile(r"\* \[1\.\]\(#footnoteref1.*\)")
     match = re.search(pattern, text)
