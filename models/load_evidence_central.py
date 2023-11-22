@@ -1,5 +1,6 @@
 """Load evidence central."""
 
+import re
 from typing import Any
 
 from bs4 import BeautifulSoup
@@ -23,6 +24,30 @@ def extract_content(soup: BeautifulSoup) -> Any:
     return content
 
 
+def clean_data(markdown_content: str) -> Any:
+    """Remove unwanted text from markdown content."""
+    # Search for the position of "abstract" (case insensitive)
+    abstract_match = re.search(r"\b## ABSTRACT\b", markdown_content, re.IGNORECASE)
+
+    if abstract_match:
+        # Extract content after the "abstract" text
+        abstract_position = abstract_match.start()
+        markdown_content = markdown_content[abstract_position:]
+
+    # Remove lines with the specified pattern
+    markdown_content = re.sub(r"!\[\]\(/api/attachments/\d+/download\)", "", markdown_content)
+
+    # Search for the position of "abstract" (case insensitive)
+    further_match = re.search(r"\b##### FURTHER READING\b", markdown_content, re.IGNORECASE)
+
+    if further_match:
+        # Extract content before the "further reading" text
+        further_position = further_match.start()
+        markdown_content = markdown_content[:further_position]
+
+    return markdown_content
+
+
 def load_evidence_central(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load evidence central from a url and html."""
     soup = BeautifulSoup(html, "html.parser")
@@ -30,6 +55,8 @@ def load_evidence_central(url: str, html: str, bs_parser: str = "html.parser") -
     content = extract_content(soup)
 
     content = clean(to_markdown(str(content), base_url=url)) if content else ""
+
+    content = clean_data(content)
 
     metadata = {
         "url": url,

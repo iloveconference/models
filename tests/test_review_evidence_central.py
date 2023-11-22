@@ -11,12 +11,6 @@ import re
 
 
 mark_text = """
-[
-
-![Moroni, Son of Mormon, Writing on the Golden Plates. Image and caption via churchofjesuschrist.org.](/api/attachments/2108/thumbnail/w760)
-Moroni, Son of Mormon, Writing on the Golden Plates. Image and caption via churchofjesuschrist.org.
-
----
 
 ## ABSTRACT
 
@@ -48,7 +42,7 @@ It also reads, “Let (some) future prince restore its ruins, let him inscribe h
 
 Later, in the Greco-Roman World, treaties between nations and even some laws passed by local assemblies were engraved upon bronze plates and invoked curses upon those who broke such agreements.[9](#n9) Many examples of lead plates recovered from Greece, Italy and Great Britain have been inscribed with curses to be invoked against evil doers or in the hopes of obtaining divine vengeance.[10](#n10)
 
-![](/api/attachments/2107/download)
+
 Defixio tabella with an opisthographic curse in Greek against Kardelos. Lead, 4th century CE. From the Columbarium of the Villa Doria Pamphilj in Rome. Image and caption via Wikimedia commons.
 
 **Indian Copper Plate Grants**
@@ -59,7 +53,7 @@ A copper plate recovered from Bangladesh and dating to AD 478 states that “the
 
 The Baroda Copper Plate Inscription from Gujarit (AD 812) reads, “and anyone who, his mind being covered by a dark veil of ignorance, might revoke or allow someone else to revoke [this grant], would be guilty of the five great sins and five minor sins.” While the one who gifts this grant was to reside in heaven for sixty-thousand years, the one who “revokes it or allows [another to revoke it] dwells for the same period in hell.”[15](#n15) These examples show how such gifts of land were considered inviolable and not to be treated lightly.
 
-![](/api/attachments/2106/download)
+
 The Velvikudi inscription is an 8th-century bilingual copper-plate grant from the Panday kingdom of southern India. Image via Wikimedia Commons. Caption via Wikipedia.
 
 **Curses and Blessings in the Book of Mormon**
@@ -80,95 +74,7 @@ This applies not only to those of the past but those today and in the future. �
 
 Curses and blessings in relation to treaties, covenants, and other official documents can be found on a variety of metal documents, spanning from the Mediterranean to southern Asia and from the second millennium BC to the Middle Ages. As a covenant text filled with prophetic warnings and promised blessings, the Book of Mormon fits well among the known examples of metal records from ancient and Medieval history.
 
----
 
-##### FURTHER READING
-
-Book of Mormon Central, “[Is the Book of Mormon Like Other Ancient Metal Documents?](https://knowhy.bookofmormoncentral.org/knowhy/is-the-book-of-mormon-like-other-ancient-metal-documents) (Jacob 4:2),” *KnoWhy* 512 (April 25, 2019).
-
-Book of Mormon Central, “[Are There Other Ancient Records Like the Book of Mormon?](https://knowhy.bookofmormoncentral.org/knowhy/are-there-other-ancient-records-like-the-book-of-mormon) (Mormon 8:16),” *KnoWhy* 407 (February 13, 2018).
-
-William J. Hamblin, “[Sacred Writing on Metal Plates in the Ancient Mediterranean](https://archive.bookofmormoncentral.org/content/sacred-writing-metal-plates-ancient-mediterranean),” *FARMS Review* 19, no. 1 (2007): 37–54.
-
-H. Curtis Wright, “[Metallic Documents in Antiquity](https://archive.bookofmormoncentral.org/content/sacred-writing-metal-plates-ancient-mediterranean),” *BYU Studies Quarterly*, 10, no. 4 (1970): 457–477.
-
-#####  RELEVANT SCRIPTURES
-
-[Title Page of the Book of Mormon](https://www.churchofjesuschrist.org/study/scriptures/bofm/bofm-title?lang=eng)
-
-[2 Nephi 1:7](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/1.97?lang=eng#p7)
-
-[2 Nephi 31:14](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/31.14?lang=eng#p14)
-
-[2 Nephi 31:20](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/31.20?lang=eng#p20)
-
-[2 Nephi 33:7](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/33.7?lang=eng#p7)
-
-[2 Nephi 33:11](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/33.11?lang=eng#p11)
-
-[2 Nephi 33:14](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/33.14?lang=eng#p14)
-
-[Alma 37:31](https://www.churchofjesuschrist.org/study/scriptures/bofm/alma/37.31?lang=eng#p31)
-
-[Alma 45:16](https://www.churchofjesuschrist.org/study/scriptures/bofm/alma/45.16?lang=eng#p16)
-
-[3 Nephi 18:13](https://www.churchofjesuschrist.org/study/scriptures/bofm/3-ne/18.13?lang=eng#p13)
-
-[3 Nephi 18:29](https://www.churchofjesuschrist.org/study/scriptures/bofm/3-ne/18.29?lang=eng#p29)
-
-[3 Nephi 21:11–25](https://www.churchofjesuschrist.org/study/scriptures/bofm/3-ne/21.11-25?lang=eng#p11)
-
-[3 Nephi 26:9–10](https://www.churchofjesuschrist.org/study/scriptures/bofm/3-ne/26.9-10?lang=eng#p9)
-
-[Ether 4:4–7](https://www.churchofjesuschrist.org/study/scriptures/bofm/ether/4.4-7?lang=eng#p4)
-
-[Ether 4:8](https://www.churchofjesuschrist.org/study/scriptures/bofm/ether/4.8?lang=eng#p8)
-
-[Ether 4:11](https://www.churchofjesuschrist.org/study/scriptures/bofm/ether/4.11?lang=eng#p11)
-
-[Moroni 10:27](https://www.churchofjesuschrist.org/study/scriptures/bofm/moro/10.27?lang=eng#p27)
-
-[Moroni 10:29](https://www.churchofjesuschrist.org/study/scriptures/bofm/moro/10.29?lang=eng#p29)
-
-#####
-
----
-
-##### END NOTES
-
-[1](#p1) James B. Pritchard, *Ancient Near Eastern Texts Relating to the Old Testament*, Third edition with Supplement (Princeton, NJ: Princeton University Press, 1969), 200–201.
-
-[2](#p2) William W. Hallo and K. Lawson Younger, Jr., eds., *The Context of Scripture. Volume II: Monumental Inscriptions from the Biblical World* (Leiden and Boston, MA: Brill, 2003), 105. Nephi appeals directly to God as a witness to the truth of his words: “And if they are not the words of Christ, judge ye—for Christ will show unto you, with power and great glory, that they are his words at the last day; and you and I shall stand face to face before his bar; and ye shall know that I have been commanded of him to write these things not withstanding my weakness” ([2 Nephi 33:11](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/33.11?lang=eng#p11)). While those who receive his words will be blessed and spotless at the judgment seat ([2 Nephi 33:7](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/33.7?lang=eng#p7)), those who reject the goodness of God are cursed, “for these words shall condemn you at the last day” ([2 Nephi 33:14](https://www.churchofjesuschrist.org/study/scriptures/bofm/2-ne/33.14?lang=eng#p14)). Moroni makes a similar appeal ([Moroni 10:27](https://www.churchofjesuschrist.org/study/scriptures/bofm/moro/10.27?lang=eng#p27), [29](https://www.churchofjesuschrist.org/study/scriptures/bofm/moro/10.29?lang=eng#p29)).
-
-[3](#p3) Pritchard, *Ancient Near Eastern Texts Relating to the Old Testament*, 201.
-
-[4](#p4) Pritchard, *Ancient Near Eastern Texts Relating to the Old Testament*, 201.
-
-[5](#p5) Hallo and Younger, *The Context of Scripture*, 105.
-
-[6](#p6) Hallo and Younger, *The Context of Scripture*, 105.
-
-[7](#p7) Daniel David Luckenbill, *Ancient Records of Assyria and Babylonia. Volume II. Historical Records of Assyria from Sargon to the End* (Chicago, ILL: University of Chicago Press, 1927), 57.
-
-[8](#p8) Luckenbill, *Ancient Records of Assyria and Babylonia*, 58.
-
-[9](#p9) Callie Williamson, “Monuments of Bronze: Roman Legal Documents on Bronze Tablets,” *Classical Antiquity* 6, no. 1 (April 1987): 176.
-
-[10](#p10) H. S. Versnel, “Beyond Cursing: The Appeal to Justice in Judicial Prayers,” in *Magika Hiera: Ancient Greek Magic and Religion*, ed. Christopher A. Faraone and Dirk Obbink (New York, NY: Oxford University Press, 1991), 60–105; Roy Kotansky, “Incantations and Prayers for Salvation on Inscribed Greek Amulets,” in *Magika Hiera*, 107–137; Geoff W. Adams, “The Social and Cultural Implications of Curse Tablets [Defixiones] in Britain and on the Continent,” *Studia Humaniora Tartuensia* 7 (2006): 1–15.
-
-[11](#n11) Julius Jolly, trans., *The Institutes of Vishnu* (Dehli: Motilal Banarsidass, 1970), 21–22.
-
-[12](#p12) Julius Jolly, trans., *The Institutes of Vishnu*, 22.
-
-[13](#p13) Arlo Griffiths, “New Documents for the Early History of Pundravardhana: Copperplate Inscriptions from the Later Gupta and Early Post-Gupta Periods,” *Pratna Samiksha: A Journal of Archaeology*, New Series 6 (2016): 23–24.
-
-[14](#p14) H. Krishna Sastri, “Velvikudi Grant of Nedunjadaiyan: The Third Year of Reign,” *Epigraphia Indica* 17 (1923–1924): 309.
-
-[15](#p15) Richard Salomon, *Indian Epigraphy: A Guide to the Study of Inscriptions in Sanskrit, Prakrit, and the Other Indo-Aryan Languages* (New York, NY: Oxford University Press, 1998), 294.
-
-[16](#p16) Mormon promises that those who prove faithful to the teachings of Jesus in the Book of Mormon will be blessed to receive more, while those who do not will fall under condemnation ([3 Nephi 26:9–10](https://www.churchofjesuschrist.org/study/scriptures/bofm/3-ne/26.9-10?lang=eng#p9)).
-
-]
 """
 
 
