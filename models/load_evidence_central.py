@@ -62,5 +62,5 @@ def load_evidence_central(url: str, html: str, bs_parser: str = "html.parser") -
         "url": url,
         "title": clean(title) if title else "",
     }
-    print(metadata)
+    # print(metadata)
     return Document(page_content=content, metadata=metadata)
