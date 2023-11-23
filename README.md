@@ -53,7 +53,7 @@ Activate the poetry virtual environment: `poetry shell`
 Periodically add the files you are working on to git and run the following to make sure the code is high quality:
 
 - `pre-commit run -a`
-- `mypy models`
+- `mypy models tests`
 - `pytest .`
 
 Before creating a pull request, run `nox` to make sure that all checks pass.

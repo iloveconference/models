@@ -878,4 +878,4 @@ def test_load_knowhy() -> None:
     assert result.metadata["title"] == "What Does the New Testament Teach about the Great Apostasy?"
     assert result.metadata["author"] == "Scripture Central"
     assert result.metadata["date"] == "October 17, 2023"
-    assert not result.page_content.startswith("* [1.](#footnoteref1")
+    assert "#footnoteref" not in result.page_content
