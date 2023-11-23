@@ -12,8 +12,11 @@ from models.load_utils import to_markdown
 
 def clean_text(markdown_content: str) -> Any:
     """Remove unwanted texts from dc people content."""
+    # init return text
+    text_data = ""
+
     # Search for the position of "abstract" (case insensitive)
-    text_match = re.search(r"\b[/d](#t1).\b", markdown_content, re.IGNORECASE)
+    text_match = re.search(r"\b[\d+](#t\d+).\b", markdown_content, re.IGNORECASE)
 
     if text_match:
         # Check content after the "text" text

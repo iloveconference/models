@@ -7,6 +7,7 @@ be removed or pass if it has already been removed
 # flake8: noqa
 
 import re
+from typing import Any
 
 from models.load_dc_people import clean_text
 
@@ -56,12 +57,12 @@ By 1850 Amos was residing in Northern California. By 1853 he was living in Michi
 """
 
 
-def check_text(markdown_content):
+def check_text(markdown_content: str) -> Any:
     # result check variable boolean
     result_check = []
 
     # Search for the position of "abstract" (case insensitive)
-    text_match = re.search(r"\b[/d](#t1).\b", markdown_content, re.IGNORECASE)
+    text_match = re.search(r"\b[\d+](#t\d+).\b", markdown_content, re.IGNORECASE)
 
     if text_match:
         # Check content after the "text" text
@@ -69,9 +70,9 @@ def check_text(markdown_content):
 
         # Check if there is text after the "text" section
         if text_position > 0:
-            result_check.append(True)
+            result_check.append("True")
         else:
-            result_check.append(False)
+            result_check.append("False")
 
     return result_check
 
@@ -81,4 +82,4 @@ def test_review_load_dc_people() -> None:
 
     result = clean_text(mark_text)
     assert len(result) == 0
-    assert True not in result
+    assert "True" not in result
