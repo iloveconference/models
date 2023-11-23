@@ -58,8 +58,10 @@ By 1850 Amos was residing in Northern California. By 1853 he was living in Michi
 
 
 def check_text(markdown_content: str) -> Any:
+    """Check for unwanted text presence"""
     # result check variable boolean
     result_check = []
+    markdown_content = clean_text(markdown_content)
 
     # Search for the position of "abstract" (case insensitive)
     text_match = re.search(r"\b[\d+](#t\d+).\b", markdown_content, re.IGNORECASE)
@@ -79,7 +81,6 @@ def check_text(markdown_content: str) -> Any:
 
 def test_review_load_dc_people() -> None:
     """It returns a valid Document for load dc people."""
-
-    result = clean_text(mark_text)
+    result = check_text(mark_text)
     assert len(result) == 0
     assert "True" not in result
