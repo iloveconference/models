@@ -26,21 +26,6 @@ def places_clean(text: str) -> str:
     return text
 
 
-def replace_header_with_year(text: str) -> str:
-    """Define a regular expression pattern to match any year range."""
-    year_pattern = re.compile(r"\b\d{4}\s*-\s*\d{4}\b")  # Matches year ranges like 1828-1830, 1823 - 1830, etc.
-
-    # Find the first occurrence of a year range in the text
-    match = year_pattern.search(text)
-
-    if match:
-        # Replace the matched year range with an empty string
-        modified_text = text[: match.start()] + text[match.end() :]
-        return modified_text
-    else:
-        return text  # Return the original text if no year range is found
-
-
 def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load dc places from a url and html."""
     body = []
@@ -61,7 +46,6 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
             and not section.find("a", href=True)
         ):
             text = places_clean(to_markdown(str(section), base_url=url)) if section else ""
-            text = replace_header_with_year(text)
             text = remove_year_headers(text)
             # print('text:',text)
             if text == "## ":
