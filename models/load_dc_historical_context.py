@@ -49,11 +49,12 @@ def get_content(soup: BeautifulSoup) -> Any:
 
 
 def load_dc_historical_context(url: str, html: str, bs_parser: str = "html.parser") -> Document:
-    """Load knowhys from a url and html."""
+    """Load Historical Context from a url and html."""
     soup = BeautifulSoup(html, bs_parser)
     title = get_title(soup)
     body = get_content(soup)
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
+    content = content.split("[1](#t1).")[0]
 
     metadata = {
         "url": url,
