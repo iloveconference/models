@@ -715,8 +715,9 @@ var ElementorProFrontendConfig = {"ajaxurl":"https:\\/\\/doctrineandcovenantscen
 def test_load_dc_historical_context_extra() -> None:
     """It returns a valid Document for D&C Historical Context."""
     url = "https://doctrineandcovenantscentral.org/historical-context/dc-26/"
-    result = load_dc_historical_context_extra(url, html)
-    text = "“[History, circa June–October 1839 [Draft 1]](https://www.josephsmithpapers.org/paper-summary/history-circa-june-october-1839-draft-1/8),” p. [8], The Joseph Smith Papers, accessed July 23, 2020."
+    result = load_dc_historical_context(url, html)
+    text = "“[History, circa June–October 1839 [Draft 1]](https://www.josephsmithpapers.org/paper-summary/history-circa-june-october-1839-draft-1/9),” p. [9], The Joseph Smith Papers, accessed July 23, 2020."
     assert len(result.page_content) > 0
     assert result.metadata["url"] == url
     assert result.metadata["title"] == "Historical Context and Background of D&C 26"
+    assert not text in result.page_content
