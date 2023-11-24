@@ -2298,6 +2298,7 @@ var ElementorProFrontendConfig = {"ajaxurl":"https:\\/\\/doctrineandcovenantscen
 
 </body>
 </html>
+
 """
 
 
@@ -2308,4 +2309,5 @@ def test_load_dc_places() -> None:
     assert len(result.page_content) > 0
     assert result.metadata["url"] == url
     assert result.metadata["title"] == "Places of the D&C / Palmyra-Manchester, New York"
-    assert result.page_content.startswith("## Sacred Grove\n\n")
+    assert "## Sacred Grove\n\n" in result.page_content
+    assert not result.page_content.startswith("## 18")
