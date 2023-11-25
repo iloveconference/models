@@ -16,7 +16,7 @@ def clean_text(markdown_content: str) -> Any:
     text_data = ""
 
     # Search for the position of "abstract" (case insensitive)
-    text_match = re.search(r"\s\[\d+\]\(#t\d+\)\.\s", markdown_content, re.IGNORECASE)
+    text_match = re.search(r"^\[\d+\]\(#t\d+\)\.", markdown_content, re.IGNORECASE | re.MULTILINE)
 
     if text_match:
         # Check content after the "text" text
