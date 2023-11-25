@@ -32,7 +32,7 @@ def check_text(url: str, markdown_content: str) -> Any:
     doc_content = load_dc_people(url, markdown_content)
 
     # Search for the position of "unwanted text" (case insensitive)
-    text_match = re.search(r"[(\d+)](#t(\d+)).", doc_content.page_content, re.IGNORECASE)
+    text_match = re.search(r"\s\[\d+\]\(#t\d+\)\.\s", doc_content.page_content, re.IGNORECASE)
 
     if text_match:
         # Check content after the "text" text
