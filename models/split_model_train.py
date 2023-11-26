@@ -99,6 +99,8 @@ def syntactic_paragraph_features(text: str) -> dict[str, int]:
     """Get syntactic features for a paragraph."""
     quote_prefix = re.match(r'(.*?)(?:^|[:;,]\s+)"', text)
     return {
+        # is a markdown header or bold text
+        "is_header": 1 if re.match(r"\s*#{2,6}\s[^\n]+\s*$", text) or re.match(r"\s*\*{2}[^\n]+\*{2}\s*$", text) else 0,
         # begins with * or a number or a letter or roman numeral
         "is_list": 1 if re.match(r"\s*(?:\*|\(?[0-9]+[.)]?|\(?[A-Za-z][.)]|\(?[ivx]+[.)])\s", text) else 0,
         # ends in :
@@ -136,6 +138,7 @@ def predict_using_syntactic_features(
                     and not features["ends_with_colon"]
                     and (next_features is None or not next_features["is_quote"])
                 )
+                or (prev_features is not None and prev_features["is_header"] and prev_features["is_short"])
             ):
                 pass
             else:
@@ -147,19 +150,22 @@ def predict_using_syntactic_features(
 
 
 def group_paragraphs_using_syntactic_features(
-    syntactic_feature_generator: Callable[[str], dict[str, int]], paragraphs: list[str]
+    syntactic_feature_generator: Callable[[str], dict[str, int]], paragraphs: list[str], max_chars: int = 2000
 ) -> list[list[str]]:
     """Group paragraphs using syntactic features."""
     syntactic_predictor = predict_using_syntactic_features(syntactic_feature_generator)
     feature_splits = syntactic_predictor(paragraphs)
     prev_split = None
+    group_len = 0
     paragraph_groups = []
     group: list[str] = []
     for paragraph, feature_split in zip(paragraphs, feature_splits, strict=True):
-        if feature_split != prev_split and len(group) > 0:
+        if len(group) > 0 and (feature_split != prev_split or group_len + len(paragraph) > max_chars):
             paragraph_groups.append(group)
             group = []
+            group_len = 0
         group.append(paragraph)
+        group_len += len(paragraph)
         prev_split = feature_split
     paragraph_groups.append(group)
     return paragraph_groups
@@ -183,6 +189,58 @@ def predict_using_features_and_embeddings(
         for ix in range(1, len(embeddings)):
             score = np.dot(embeddings[ix - 1], embeddings[ix])
             if score < threshold:
+                current += 1
+            splits.extend([current] * len(paragraph_groups[ix]))
+        return splits
+
+    return predict
+
+
+def predict_using_features_and_greedy_embeddings(  # noqa: C901
+    syntactic_feature_generator: Callable[[str], dict[str, int]],
+    embedder: Callable[[list[str]], list[NDArray[np.float32]]],
+    threshold: float,
+    max_chars: int = 2000,
+) -> Callable[[list[str]], list[int]]:
+    """Predict splits using syntactic features followed by embeddings."""
+
+    def _paragraph_group_length(ix, paragraph_group_assignments, paragraph_group_texts):
+        return sum(
+            len(paragraph_group_texts[i])
+            for i, assignment in enumerate(paragraph_group_assignments)
+            if assignment == paragraph_group_assignments[ix]
+        )
+
+    def _merge_paragraph_groups(ix1, ix2, paragraph_group_assignments):
+        assignment1 = paragraph_group_assignments[ix1]
+        assignment2 = paragraph_group_assignments[ix2]
+        for ix, assignment in enumerate(paragraph_group_assignments):
+            if assignment == assignment2:
+                paragraph_group_assignments[ix] = assignment1
+
+    def predict(paragraphs: list[str]) -> list[int]:
+        # first group paragraphs using syntactic features
+        paragraph_groups = group_paragraphs_using_syntactic_features(syntactic_feature_generator, paragraphs, max_chars)
+        # next get embeddings for paragraph groups
+        paragraph_group_texts = ["\n".join(group) for group in paragraph_groups]
+        embeddings = embedder(paragraph_group_texts)
+        # finally merge paragraph groups greedily based on embeddings as long as max_chars is not exceeded
+        pair_scores = [np.dot(embeddings[ix], embeddings[ix + 1]) for ix in range(len(paragraph_groups) - 1)]
+        paragraph_group_assignments = [ix for ix in range(len(paragraph_groups))]
+        sorted_pair_scores = sorted(enumerate(pair_scores), key=lambda x: x[1], reverse=True)
+        for ix, score in sorted_pair_scores:
+            if score < threshold:
+                break
+            group_len = _paragraph_group_length(ix, paragraph_group_assignments, paragraph_group_texts)
+            next_group_len = _paragraph_group_length(ix + 1, paragraph_group_assignments, paragraph_group_texts)
+            if group_len + next_group_len > max_chars:
+                continue
+            _merge_paragraph_groups(ix, ix + 1, paragraph_group_assignments)
+        # finally generate splits based on assignments
+        current = 1
+        splits = [current] * len(paragraph_groups[0])
+        for ix in range(1, len(paragraph_groups)):
+            if paragraph_group_assignments[ix] != paragraph_group_assignments[ix - 1]:
                 current += 1
             splits.extend([current] * len(paragraph_groups[ix]))
         return splits

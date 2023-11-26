@@ -7050,6 +7050,23 @@ docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2)", "sphinx-
 test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
 
 [[package]]
+name = "voyageai"
+version = "0.1.3"
+description = ""
+optional = false
+python-versions = ">=3.7.1,<4.0.0"
+files = [
+    {file = "voyageai-0.1.3-py3-none-any.whl", hash = "sha256:64922130c37e21a1fe6e2d965906516dd224edfc2717c7ce50bcf6ba4b9a57b8"},
+    {file = "voyageai-0.1.3.tar.gz", hash = "sha256:a3b08dcdfcb7f257f0bb19491b90a44d6b1dbec91a09a3c7f49dcdcee05c356b"},
+]
+
+[package.dependencies]
+aiohttp = ">=3.5,<4.0"
+numpy = ">=1.11"
+requests = ">=2.20,<3.0"
+tenacity = ">=8.0.1"
+
+[[package]]
 name = "wandb"
 version = "0.15.12"
 description = "A CLI and library for interacting with the Weights & Biases API."
@@ -7466,4 +7483,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "60ef2bd3a3b42897c17a8a7bd5f3fef283a9f4238461a289813c23e678774bc3"
+content-hash = "f9827f0dde356b1a0add281848a8932a591fc27139d0e71275223bb01f3b372c"
