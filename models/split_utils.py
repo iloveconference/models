@@ -149,7 +149,7 @@ def get_paragraph_sentence_texts_and_ids(  # noqa: C901
                 else:
                     ts = text.split(split_point)
                 # extra is the split point unless we split on sentences
-                extra = split_point if split_point != "SENTENCE" else ""
+                extra = split_point if split_point != "SENTENCE" else " "
                 for t in ts:
                     splits.append(t + extra)
             else:
