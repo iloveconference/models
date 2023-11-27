@@ -1,3 +1,4 @@
+.ipynb_checkpoints/
 .mypy_cache/
 /.coverage
 /.coverage.*
@@ -16,3 +17,5 @@ __pycache__/
 /notebooks/wandb/
 .idea/
 .venv/
+.vscode/
+*.log
