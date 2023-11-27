@@ -109,7 +109,7 @@ def compare(
 
 def evaluate_embedder(
     talk_sections: list[dict[str, Any]],
-    all_pred_splits: list[list[int]],
+    all_syntactic_splits: list[list[int]],
     embedder: Callable[[list[str]], list[NDArray[np.float32]]],
 ) -> tuple[list[float], list[float]]:
     """Evaluate an embedder.
@@ -119,25 +119,26 @@ def evaluate_embedder(
     """
     pos_similarities = []
     neg_similarities = []
-    for talk_section, pred_splits in zip(talk_sections, all_pred_splits, strict=True):
+    for talk_section, syntactic_splits in zip(talk_sections, all_syntactic_splits, strict=True):
         paragraphs = [clean_text(paragraph_split["text"]) for paragraph_split in talk_section["paragraphs"]]
         true_splits = [paragraph_split["split"] for paragraph_split in talk_section["paragraphs"]]
         embeds = embedder(paragraphs)
         prev_true_split: Optional[int] = None
-        prev_pred_split: Optional[int] = None
-        for ix, (true_split, pred_split) in enumerate(zip(true_splits, pred_splits, strict=True)):
+        prev_syntactic_split: Optional[int] = None
+        for ix, (true_split, syntactic_split) in enumerate(zip(true_splits, syntactic_splits, strict=True)):
             true_division = False
-            pred_division = False
+            syntactic_division = False
             if prev_true_split is not None and prev_true_split != true_split:
                 true_division = True
-            if prev_pred_split is not None and prev_pred_split != pred_split:
-                pred_division = True
+            if prev_syntactic_split is not None and prev_syntactic_split != syntactic_split:
+                syntactic_division = True
             similarity = float(np.dot(embeds[ix - 1], embeds[ix]))
-            if pred_division:
+            # print(ix, true_split, syntactic_split, true_division, syntactic_division, similarity)
+            if syntactic_division:
                 if true_division:
                     pos_similarities.append(similarity)
                 else:
                     neg_similarities.append(similarity)
             prev_true_split = true_split
-            prev_pred_split = pred_split
+            prev_syntactic_split = syntactic_split
     return pos_similarities, neg_similarities
