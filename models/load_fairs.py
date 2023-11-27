@@ -15,9 +15,13 @@ def load_fairs(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     # date = soup.find("div", class_="field-name-publish-date")
     # citation = soup.find(id="block-views-knowhy-citation-block")
     body = soup.find("div", id="mw-content-text")
+    if not isinstance(body, Tag):
+        body = soup.find("div", class_="entry-content")
     # content = soup.find(...)
     if isinstance(body, Tag):
         title = body.find("span", class_="mw-headline")
+        if not isinstance(title, Tag):
+            title = soup.find("h1", class_="entry-title")
     else:
         title = None
     if isinstance(title, Tag):
