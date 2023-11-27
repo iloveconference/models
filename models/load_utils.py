@@ -85,7 +85,7 @@ class Loader(BaseLoader):
             doc = self.load_fn(data["url"], data["html"], self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
-                    print("Missing title or content - skipping", filename)
+                    print("Missing title or content - skipping", data["url"])
                 continue
             docs.append(doc)
         return docs
