@@ -134,6 +134,8 @@ def get_paragraph_sentence_texts_and_ids(  # noqa: C901
     split_points = ["\n\n", "\n", "SENTENCE", ""]
     texts = [clean_text(content, keep_anchors=True, keep_newlines=True)]
     for split_point in split_points:
+        if split_point == "SENTENCE" and parser is None:
+            continue
         splits = []
         too_long = False
         for text in texts:
