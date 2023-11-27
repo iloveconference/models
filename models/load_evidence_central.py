@@ -27,7 +27,7 @@ def extract_content(soup: BeautifulSoup) -> Any:
 def clean_data(markdown_content: str) -> Any:
     """Remove unwanted text from markdown content."""
     # Search for the position of "abstract" (case insensitive)
-    abstract_match = re.search(r"\b## ABSTRACT\b", markdown_content, re.IGNORECASE)
+    abstract_match = re.search(r"^## ABSTRACT\b", markdown_content, re.IGNORECASE | re.MULTILINE)
 
     if abstract_match:
         # Extract content after the "abstract" text
@@ -38,7 +38,7 @@ def clean_data(markdown_content: str) -> Any:
     markdown_content = re.sub(r"!\[\]\(/api/attachments/\d+/download\)", "", markdown_content)
 
     # Search for the position of "abstract" (case insensitive)
-    further_match = re.search(r"\b##### FURTHER READING\b", markdown_content, re.IGNORECASE)
+    further_match = re.search(r"^##### FURTHER READING\b", markdown_content, re.IGNORECASE | re.MULTILINE)
 
     if further_match:
         # Extract content before the "further reading" text
