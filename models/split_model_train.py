@@ -1,6 +1,5 @@
 """Functions to train splitation models."""
 import re
-import time
 from typing import Any
 from typing import Callable
 from typing import Optional
@@ -8,9 +7,6 @@ from typing import cast
 
 import numpy as np
 import pandas as pd  # type: ignore
-from numpy import dtype
-from numpy import ndarray
-from numpy import single
 from numpy.typing import NDArray
 from tqdm import tqdm
 
