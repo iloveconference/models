@@ -1,16 +1,29 @@
 """Load knowhys."""
 
-import json
-import os
-from typing import Iterator
+import re
 
 from bs4 import BeautifulSoup
-from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
-from tqdm import tqdm
 
 from models.load_utils import clean
 from models.load_utils import to_markdown
+
+
+line = "* [1.](#footnoteref1"
+
+
+def remove_text_below_footnote(line: str, text: str) -> str:
+    """This function removes footnotes."""
+    pattern = re.compile(r"\* \[1\.\]\(#footnoteref1.*\)")
+    match = re.search(pattern, text)
+
+    if match:
+        # Remove everything after the matched line
+        cleaned_text = text[: match.start()]
+        return cleaned_text
+
+    # If no match is found, return the original text
+    return text
 
 
 def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document:
@@ -22,6 +35,7 @@ def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document
     citation = soup.find(id="block-views-knowhy-citation-block")
     body = soup.find("div", class_="group-left")
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
+    clean_content = remove_text_below_footnote(line, content)
 
     metadata = {
         "url": url,
@@ -30,36 +44,4 @@ def load_knowhy(url: str, html: str, bs_parser: str = "html.parser") -> Document
         "date": clean(date) if date else "",
         "citation": clean(to_markdown(str(citation), base_url=url)) if citation else "",
     }
-    return Document(page_content=content, metadata=metadata)
-
-
-class KnowhyLoader(BaseLoader):
-    """Loader for General Conference Talks."""
-
-    def lazy_load(self) -> Iterator[Document]:
-        """A lazy loader for Documents."""
-        raise NotImplementedError(f"{self.__class__.__name__} does not implement lazy_load()")
-
-    def __init__(self, path: str = "", bs_parser: str = "html.parser"):
-        """Initialize loader."""
-        super().__init__()
-        self.path = path
-        self.bs_parser = bs_parser
-
-    def load(self, verbose: bool = False) -> list[Document]:
-        """Load documents from path."""
-        docs = []
-        for filename in tqdm(os.listdir(self.path), disable=not verbose):
-            path = os.path.join(self.path, filename)
-            with open(path, encoding="utf8") as f:
-                data = json.load(f)
-            doc = load_knowhy(data["url"], data["html"], bs_parser=self.bs_parser)
-            if not doc.metadata["title"] or not doc.page_content:
-                if verbose:
-                    print("Missing title or content - skipping", filename)
-                continue
-            if not doc.metadata["author"]:
-                if verbose:
-                    print("Missing author", filename)
-            docs.append(doc)
-        return docs
+    return Document(page_content=clean_content, metadata=metadata)

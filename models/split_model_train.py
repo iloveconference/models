@@ -1,5 +1,6 @@
 """Functions to train splitation models."""
 import re
+import time
 from typing import Any
 from typing import Callable
 from typing import Optional
@@ -7,6 +8,9 @@ from typing import cast
 
 import numpy as np
 import pandas as pd  # type: ignore
+from numpy import dtype
+from numpy import ndarray
+from numpy import single
 from numpy.typing import NDArray
 from tqdm import tqdm
 
@@ -28,10 +32,27 @@ def get_openai_embedder(
     openai: Any, engine: str = "text-embedding-ada-002"
 ) -> Callable[[list[str]], list[NDArray[np.float32]]]:
     """Get openai embeddings for paragraphs."""
+    max_retries = 5
+    backoff_factor = 2  # Exponential back-off factor
 
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        res = openai.Embedding.create(input=paragraphs, engine=engine)
-        return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
+    def embed(paragraphs: list[str]) -> list[ndarray[Any, dtype[single]]]:
+        retry_delay = 1  # Initial delay in seconds
+        for _ in range(max_retries):
+            try:
+                # Attempt to create the embedding
+                res = openai.Embedding.create(input=paragraphs, engine=engine)
+                return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
+            except openai.error.ServiceUnavailableError:
+                # If a ServiceUnavailableError is caught, wait for the retry delay
+                print(f"ServiceUnavailableError caught. Retrying in {retry_delay} seconds.")
+                time.sleep(retry_delay)
+                # Increase the delay for the next attempt
+                retry_delay *= backoff_factor
+            except Exception as e:
+                # If a different exception is caught, re-raise it
+                raise e
+        # If all retries fail, throw an exception
+        raise Exception(f"Failed to create embedding after {max_retries} retries.")
 
     return embed
 

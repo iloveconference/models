@@ -1,17 +1,22 @@
 """Load D&C Places."""
 
-import json
-import os
 import re
-from typing import Iterator
 
 from bs4 import BeautifulSoup
-from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
-from tqdm import tqdm
 
 from models.load_utils import clean
 from models.load_utils import to_markdown
+
+
+def remove_year_headers(text: str) -> str:
+    """Define the regular expression pattern."""
+    pattern = r"## \d{4}(-\d{4})?(\s+-{3,})?"
+
+    # Use re.sub to replace matches with an empty string
+    cleaned_text = re.sub(pattern, "", text)
+
+    return cleaned_text
 
 
 def places_clean(text: str) -> str:
@@ -19,21 +24,6 @@ def places_clean(text: str) -> str:
     text = clean(text)
     text = text.replace("## Key Points", "### Key Points")
     return text
-
-
-def replace_header_with_year(text: str) -> str:
-    """Define a regular expression pattern to match any year range."""
-    year_pattern = re.compile(r"\b\d{4}\s*-\s*\d{4}\b")  # Matches year ranges like 1828-1830, 1823 - 1830, etc.
-
-    # Find the first occurrence of a year range in the text
-    match = year_pattern.search(text)
-
-    if match:
-        # Replace the matched year range with an empty string
-        modified_text = text[: match.start()] + text[match.end() :]
-        return modified_text
-    else:
-        return text  # Return the original text if no year range is found
 
 
 def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Document:
@@ -56,7 +46,7 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
             and not section.find("a", href=True)
         ):
             text = places_clean(to_markdown(str(section), base_url=url)) if section else ""
-            text = replace_header_with_year(text)
+            text = remove_year_headers(text)
             # print('text:',text)
             if text == "## ":
                 continue
@@ -68,35 +58,3 @@ def load_dc_places(url: str, html: str, bs_parser: str = "html.parser") -> Docum
         # "author": clean(author) if author else "",
     }
     return Document(page_content=content, metadata=metadata)
-
-
-class PlacesLoader(BaseLoader):
-    """Loader for D&C Places."""
-
-    def lazy_load(self) -> Iterator[Document]:
-        """A lazy loader for Documents."""
-        raise NotImplementedError(f"{self.__class__.__name__} does not implement lazy_load()")
-
-    def __init__(self, path: str = "", bs_parser: str = "html.parser"):
-        """Initialize loader."""
-        super().__init__()
-        self.path = path
-        self.bs_parser = bs_parser
-
-    def load(self, verbose: bool = False) -> list[Document]:
-        """Load documents from path."""
-        docs = []
-        for filename in tqdm(os.listdir(self.path), disable=not verbose):
-            path = os.path.join(self.path, filename)
-            with open(path, encoding="utf8") as f:
-                data = json.load(f)
-            doc = load_dc_places(data["url"], data["html"], bs_parser=self.bs_parser)
-            if not doc.metadata["title"] or not doc.page_content:
-                if verbose:
-                    print("Missing title or content - skipping", filename)
-                continue
-            # if not doc.metadata["author"]:
-            #     if verbose:
-            #         print("Missing author", filename)
-            docs.append(doc)
-        return docs

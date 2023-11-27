@@ -60,7 +60,7 @@ def get_paragraph_id(paragraph: str) -> str:
 def get_paragraph_texts_and_ids(contents: str) -> list[tuple[str, str]]:
     """Get paragraphs (text, anchor) from contents."""
     paragraphs = []
-    for paragraph in contents.split("\n\n\n"):
+    for paragraph in contents.split("\n\n"):
         _id = get_paragraph_id(paragraph)
         paragraph = clean_text(paragraph)
         if not paragraph:
