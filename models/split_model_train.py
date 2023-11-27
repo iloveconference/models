@@ -204,14 +204,16 @@ def predict_using_features_and_greedy_embeddings(  # noqa: C901
 ) -> Callable[[list[str]], list[int]]:
     """Predict splits using syntactic features followed by embeddings."""
 
-    def _paragraph_group_length(ix, paragraph_group_assignments, paragraph_group_texts):
+    def _paragraph_group_length(
+        ix: int, paragraph_group_assignments: list[int], paragraph_group_texts: list[str]
+    ) -> int:
         return sum(
             len(paragraph_group_texts[i])
             for i, assignment in enumerate(paragraph_group_assignments)
             if assignment == paragraph_group_assignments[ix]
         )
 
-    def _merge_paragraph_groups(ix1, ix2, paragraph_group_assignments):
+    def _merge_paragraph_groups(ix1: int, ix2: int, paragraph_group_assignments: list[int]) -> None:
         assignment1 = paragraph_group_assignments[ix1]
         assignment2 = paragraph_group_assignments[ix2]
         for ix, assignment in enumerate(paragraph_group_assignments):

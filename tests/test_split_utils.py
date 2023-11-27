@@ -102,7 +102,7 @@ def test_get_split_texts_and_ids() -> None:
     assert result == expected_output, f"Expected {expected_output}, but got {result}"
 
 
-def test_get_paragraph_sentence_texts_and_ids():
+def test_get_paragraph_sentence_texts_and_ids() -> None:
     """It returns paragraphs, lines, or sentences (text, anchor) from contents."""
     parser = spacy.load("en_core_web_sm")
     max_chars = 120
@@ -135,7 +135,7 @@ def test_get_paragraph_sentence_texts_and_ids():
     assert results[6] == ("This is the last sentence.\n\n", "p3")
 
 
-def test_split_on_markdown_headers():
+def test_split_on_markdown_headers() -> None:
     """Is splits text on markdown headers."""
     max_chars = 10
     content = """
@@ -169,7 +169,7 @@ final line.
     assert results[6] == "**Bold header**\n\nfinal line.\n"
 
 
-def test_clean_text():
+def test_clean_text() -> None:
     """It tests cleaning text."""
     text = """
         <a name="p1"></a>To Moses, [God](https://churchofjesuschrist.org) declared, “I have a work for thee”
