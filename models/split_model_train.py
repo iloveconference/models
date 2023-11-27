@@ -13,47 +13,6 @@ from tqdm import tqdm
 from models.split_utils import clean_text
 
 
-def get_mpnet_embedder(
-    mpnet: Any,
-    batch_size: int = 8,
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
-    """Get mpnet embeddings for paragraphs."""
-
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        embeds = []
-        for ix in range(0, len(paragraphs), batch_size):
-            ix_end = min(ix + batch_size, len(paragraphs))
-            embeds.extend(mpnet.encode(paragraphs[ix:ix_end]))
-        return cast(list[NDArray[np.float32]], embeds)
-
-    return embed
-
-
-def get_openai_embedder(
-    openai: Any, engine: str = "text-embedding-ada-002"
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
-    """Get openai embeddings for paragraphs."""
-
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        res = openai.Embedding.create(input=paragraphs, engine=engine)
-        return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
-
-    return embed
-
-
-def get_cohere_embedder(
-    cohere: Any,
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
-    """Get cohere embeddings for paragraphs."""
-
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        # TODO if we end up using cohere, cache embeddings because they're so expensive
-        res = cohere.embed(texts=paragraphs, model="large", truncate="END")
-        return cast(list[NDArray[np.float32]], res.embeddings)
-
-    return embed
-
-
 def get_bert_wiki_paras_scorer(pipe: Any) -> Callable[[str, str], float]:
     """Score paragraph pairs using bert-wiki-paragraphs."""
 

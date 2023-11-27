@@ -2,9 +2,71 @@
 import os
 import re
 from typing import Any
+from typing import Callable
 from typing import Generator
 from typing import NamedTuple
 from typing import Optional
+from typing import cast
+
+import numpy as np
+from numpy.typing import NDArray
+from voyageai import get_embeddings as get_voyageai_embeddings  # type: ignore
+
+
+def get_mpnet_embedder(
+    mpnet: Any,
+    batch_size: int = 8,
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get mpnet embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        embeds = []
+        for ix in range(0, len(paragraphs), batch_size):
+            ix_end = min(ix + batch_size, len(paragraphs))
+            embeds.extend(mpnet.encode(paragraphs[ix:ix_end]))
+        return cast(list[NDArray[np.float32]], embeds)
+
+    return embed
+
+
+def get_openai_embedder(
+    openai: Any, engine: str = "text-embedding-ada-002"
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get openai embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        res = openai.Embedding.create(input=paragraphs, engine=engine)
+        return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
+
+    return embed
+
+
+def get_cohere_embedder(
+    cohere: Any,
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get cohere embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        # TODO if we end up using cohere, cache embeddings because they're so expensive
+        res = cohere.embed(texts=paragraphs, model="large", truncate="END")
+        return cast(list[NDArray[np.float32]], res.embeddings)
+
+    return embed
+
+
+def get_voyageai_embedder() -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get voyageai embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        """Get Voyage AI embeddings for paragraphs."""
+        embeds = []
+        # batch size is 8
+        for ix in range(0, len(paragraphs), 8):
+            ix_end = min(ix + 8, len(paragraphs))
+            embeds.extend(get_voyageai_embeddings(paragraphs[ix:ix_end], model="voyage-01", input_type="document"))
+        return embeds
+
+    return embed
 
 
 def get_filenames(directory: str) -> list[str]:

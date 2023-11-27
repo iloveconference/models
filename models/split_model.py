@@ -5,35 +5,23 @@ import pickle
 from typing import Any
 from typing import Sequence
 
-import numpy as np
 import openai
 import spacy
 from langchain.schema.document import BaseDocumentTransformer
 from langchain.schema.document import Document
-from numpy.typing import NDArray
 from sentence_transformers import SentenceTransformer  # type: ignore
 from tqdm.autonotebook import tqdm
-from voyageai import get_embeddings as get_voyageai_embeddings  # type: ignore
 
-from models.split_model_train import get_mpnet_embedder
-from models.split_model_train import get_openai_embedder
 from models.split_model_train import predict_using_features_and_ensemble
 from models.split_model_train import predict_using_features_and_greedy_embeddings
 from models.split_model_train import syntactic_paragraph_features
+from models.split_utils import get_mpnet_embedder
+from models.split_utils import get_openai_embedder
 from models.split_utils import get_paragraph_sentence_texts_and_ids
 from models.split_utils import get_paragraph_texts_and_ids
 from models.split_utils import get_split_texts_and_ids
+from models.split_utils import get_voyageai_embedder
 from models.split_utils import split_on_markdown_headers
-
-
-def voyageai_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-    """Get Voyage AI embeddings for paragraphs."""
-    embeds = []
-    # batch size is 8
-    for ix in range(0, len(paragraphs), 8):
-        ix_end = min(ix + 8, len(paragraphs))
-        embeds.extend(get_voyageai_embeddings(paragraphs[ix:ix_end], model="voyage-01", input_type="document"))
-    return embeds
 
 
 def split_document_content(
@@ -81,7 +69,7 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
         self.parser = spacy.load("en_core_web_sm")
 
         if embedder is None:
-            embedder = voyageai_embedder
+            embedder = get_voyageai_embedder()
 
         self.splitter = predict_using_features_and_greedy_embeddings(
             syntactic_paragraph_features, embedder, split_threshold, max_chars
