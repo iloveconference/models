@@ -8,11 +8,13 @@ from typing import cast
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 from langchain.document_loaders.base import BaseLoader
 from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
+
+from models.load_utils import clean
 
 
 class ConferenceMarkdownConverter(MarkdownConverter):  # type: ignore
@@ -43,11 +45,6 @@ def _to_markdown(html: str, **options: Any) -> str:
     return cast(str, ConferenceMarkdownConverter(**options).convert(html))
 
 
-def _clean(text: str) -> str:
-    """Replace non-breaking space with normal space."""
-    return text.replace(" ", " ")
-
-
 def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") -> Document:
     """Load a conference talk from a url and html."""
     path_components = urlparse(url).path.split("/")
@@ -57,14 +54,17 @@ def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") ->
     author = soup.select_one("article p.author-name")
     author_role = soup.select_one("article p.author-role")
     body = soup.select_one("article div.body-block")
-    content = _clean(_to_markdown(str(body), base_url=url)) if body else ""
+    if body:
+        content = clean(_to_markdown(str(body), base_url=url, heading_style="ATX", strip=["script", "style"]))
+    else:
+        content = ""
     metadata = {
         "year": year,
         "month": month,
         "url": url,
-        "title": _clean(title.text) if title else "",
-        "author": _clean(author.text) if author else "",
-        "author_role": _clean(author_role.text) if author_role else "",
+        "title": clean(title) if title else "",
+        "author": clean(author) if author else "",
+        "author_role": clean(author_role) if author_role else "",
     }
     return Document(page_content=content, metadata=metadata)
 

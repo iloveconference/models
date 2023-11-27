@@ -44,17 +44,21 @@ PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
 
 `mkdir data`
 
-`aws s3 sync s3://scripturecentralqa.data data`
+`aws s3 sync s3://scripturecentralqa.data data --no-sign-request`
 
 ## Developing
 
 Activate the poetry virtual environment: `poetry shell`
 
-Periodically add the files you are working on to git and run `nox` to run all checks and tests as you develop.
+Periodically add the files you are working on to git and run the following to make sure the code is high quality:
 
-If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.10`, or `nox -s tests-3.10`
+- `pre-commit run -a`
+- `mypy models tests`
+- `pytest .`
 
-Run `nox` before creating a pull request to ensure that all checks pass.
+Before creating a pull request, run `nox` to make sure that all checks pass.
+
+If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy`, or `nox -s tests`
 
 ### Running notebooks
 
