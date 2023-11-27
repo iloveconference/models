@@ -64,7 +64,14 @@ def split_document_content(
 class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
     """Split documents recursively, then join them based upon syntax and embedding similarity."""
 
-    def __init__(self, split_threshold: float = 0.83, max_chars: int = 2000, anchor: str = "anchor", **kwargs: Any):
+    def __init__(
+        self,
+        embedder: Any = None,
+        split_threshold: float = 0.83,
+        max_chars: int = 2000,
+        anchor: str = "anchor",
+        **kwargs: Any
+    ):
         """Initialize."""
         super().__init__(**kwargs)
 
@@ -73,8 +80,11 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
         # init spacy
         self.parser = spacy.load("en_core_web_sm")
 
+        if embedder is None:
+            embedder = voyageai_embedder
+
         self.splitter = predict_using_features_and_greedy_embeddings(
-            syntactic_paragraph_features, voyageai_embedder, split_threshold, max_chars
+            syntactic_paragraph_features, embedder, split_threshold, max_chars
         )
 
     def transform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
@@ -107,9 +117,16 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
 class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
     """Split documents recursively, then join them based upon syntax and embedding similarity."""
 
-    def __init__(self, split_threshold: float = 0.83, max_chars: int = 2000, anchor: str = "anchor", **kwargs: Any):
+    def __init__(
+        self,
+        embedder: Any = None,
+        split_threshold: float = 0.83,
+        max_chars: int = 2000,
+        anchor: str = "anchor",
+        **kwargs: Any
+    ):
         """Initialize by calling SyntacticEmbeddingSplitter."""
-        super().__init__(split_threshold, max_chars, anchor, **kwargs)
+        super().__init__(embedder, split_threshold, max_chars, anchor, **kwargs)
 
     def transform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
         """Transform documents by splitting them into sections and then splitting each section."""

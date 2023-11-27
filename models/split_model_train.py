@@ -15,11 +15,16 @@ from models.split_utils import clean_text
 
 def get_mpnet_embedder(
     mpnet: Any,
+    batch_size: int = 8,
 ) -> Callable[[list[str]], list[NDArray[np.float32]]]:
     """Get mpnet embeddings for paragraphs."""
 
     def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        return cast(list[NDArray[np.float32]], mpnet.encode(paragraphs))
+        embeds = []
+        for ix in range(0, len(paragraphs), batch_size):
+            ix_end = min(ix + batch_size, len(paragraphs))
+            embeds.extend(mpnet.encode(paragraphs[ix:ix_end]))
+        return cast(list[NDArray[np.float32]], embeds)
 
     return embed
 
