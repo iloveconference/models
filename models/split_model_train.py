@@ -85,7 +85,9 @@ def predict_using_syntactic_features(
         current = 1
         splits = []
         features: Optional[dict[str, int]] = None
-        next_features: Optional[dict[str, int]] = syntactic_feature_generator(paragraphs[0])
+        next_features: Optional[dict[str, int]] = (
+            syntactic_feature_generator(paragraphs[0]) if len(paragraphs) > 0 else None
+        )
         for i in range(len(paragraphs)):
             prev_features = features
             features = next_features
