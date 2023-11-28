@@ -179,40 +179,42 @@ def get_paragraph_sentence_texts_and_ids(  # noqa: C901
     return paragraph_texts_and_ids
 
 
-def split_on_markdown_headers(content: str, max_chars: int) -> list[str]:
+def split_on_markdown_headers(content: str, max_chars: int) -> list[tuple[str, list[str]]]:
     """Split text on markdown headers."""
     split_points = [
-        (r"((?:^|\n)(?:# [^\n]+\n))", "\n"),
-        (r"((?:^|\n)(?:## [^\n]+\n))", "\n"),
-        (r"((?:^|\n)(?:### [^\n]+\n))", "\n"),
-        (r"((?:^|\n)(?:#### [^\n]+\n))", "\n"),
+        (r"(?:^|\n)(?:# ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:## ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:#### ([^\n]+)\n)", "\n"),
         (r"(?:^|\n)(?:\*{3,})(\n)", "\n"),
         (r"(?:^|\n)(?:-{3,})(\n)", "\n"),
         (r"(?:^|\n)(?:_{3,})(\n)", "\n"),
-        (r"((?:^|\n\n)(?:\*\*[^\n]+\*\*\s*\n\s*\n))", "\n\n"),
+        (r"(?:^|\n\n)(?:\*\*([^\n]+)\*\*\s*\n\s*\n)", "\n\n"),
     ]  # noqa: W605
-    texts = [clean_text(content, keep_anchors=True, keep_newlines=True)]
+    text_headers = [(clean_text(content, keep_anchors=True, keep_newlines=True), [])]
     for split_point, extra in split_points:
-        splits = []
+        split_headers = []
         too_long = False
-        for text in texts:
+        for text, headers in text_headers:
             if len(text) > max_chars:
                 too_long = True
                 # split at split point
                 parts = re.split(split_point, text)
                 if len(parts[0].strip()) > 0:
-                    splits.append(parts[0].lstrip() + (extra if len(parts) > 1 else ""))
+                    split_headers.append((parts[0].lstrip() + (extra if len(parts) > 1 else ""), headers))
                 for ix in range(1, len(parts), 2):
-                    part = parts[ix] + parts[ix + 1]
+                    part = parts[ix + 1]
                     if ix < len(parts) - 2:
                         part += extra
-                    splits.append(part.lstrip())
+                    header = parts[ix].strip()
+                    new_headers = headers + [header] if len(header) > 0 else headers
+                    split_headers.append((part.lstrip(), new_headers))
             else:
-                splits.append(text)
+                split_headers.append((text, headers))
         if not too_long:
             break
-        texts = splits
-    return texts
+        text_headers = split_headers
+    return text_headers
 
 
 def get_paragraph_texts_and_ids(contents: str) -> list[tuple[str, str]]:

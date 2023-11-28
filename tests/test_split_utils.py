@@ -168,13 +168,13 @@ final line.
 
     results = split_utils.split_on_markdown_headers(content, max_chars)
     assert len(results) == 7
-    assert results[0] == "preamble\n"
-    assert results[1] == "# Header 1\nline 1\n"
-    assert results[2] == "## Header 2\nline 2\n"
-    assert results[3] == "## Header 3\n\nline 3\n"
-    assert results[4] == "line 3a\n"
-    assert results[5] == "## Header 4\n\nline 4\n\n"
-    assert results[6] == "**Bold header**\n\nfinal line.\n"
+    assert results[0] == ("preamble\n", [])
+    assert results[1] == ("line 1\n", ["Header 1"])
+    assert results[2] == ("line 2\n", ["Header 1", "Header 2"])
+    assert results[3] == ("line 3\n", ["Header 1", "Header 3"])
+    assert results[4] == ("line 3a\n", ["Header 1", "Header 3"])
+    assert results[5] == ("line 4\n\n", ["Header 1", "Header 4"])
+    assert results[6] == ("final line.\n", ["Header 1", "Header 4", "Bold header"])
 
 
 def test_clean_text() -> None:
