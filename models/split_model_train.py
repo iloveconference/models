@@ -1,6 +1,5 @@
 """Functions to train splitation models."""
 import re
-import time
 from typing import Any
 from typing import Callable
 from typing import Optional
@@ -8,66 +7,10 @@ from typing import cast
 
 import numpy as np
 import pandas as pd  # type: ignore
-from numpy import dtype
-from numpy import ndarray
-from numpy import single
 from numpy.typing import NDArray
 from tqdm import tqdm
 
 from models.split_utils import clean_text
-
-
-def get_mpnet_embedder(
-    mpnet: Any,
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
-    """Get mpnet embeddings for paragraphs."""
-
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        return cast(list[NDArray[np.float32]], mpnet.encode(paragraphs))
-
-    return embed
-
-
-def get_openai_embedder(
-    openai: Any, engine: str = "text-embedding-ada-002"
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
-    """Get openai embeddings for paragraphs."""
-    max_retries = 5
-    backoff_factor = 2  # Exponential back-off factor
-
-    def embed(paragraphs: list[str]) -> list[ndarray[Any, dtype[single]]]:
-        retry_delay = 1  # Initial delay in seconds
-        for _ in range(max_retries):
-            try:
-                # Attempt to create the embedding
-                res = openai.Embedding.create(input=paragraphs, engine=engine)
-                return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
-            except openai.error.ServiceUnavailableError:
-                # If a ServiceUnavailableError is caught, wait for the retry delay
-                print(f"ServiceUnavailableError caught. Retrying in {retry_delay} seconds.")
-                time.sleep(retry_delay)
-                # Increase the delay for the next attempt
-                retry_delay *= backoff_factor
-            except Exception as e:
-                # If a different exception is caught, re-raise it
-                raise e
-        # If all retries fail, throw an exception
-        raise Exception(f"Failed to create embedding after {max_retries} retries.")
-
-    return embed
-
-
-def get_cohere_embedder(
-    cohere: Any,
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
-    """Get cohere embeddings for paragraphs."""
-
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        # TODO if we end up using cohere, cache embeddings because they're so expensive
-        res = cohere.embed(texts=paragraphs, model="large", truncate="END")
-        return cast(list[NDArray[np.float32]], res.embeddings)
-
-    return embed
 
 
 def get_bert_wiki_paras_scorer(pipe: Any) -> Callable[[str, str], float]:
@@ -120,6 +63,8 @@ def syntactic_paragraph_features(text: str) -> dict[str, int]:
     """Get syntactic features for a paragraph."""
     quote_prefix = re.match(r'(.*?)(?:^|[:;,]\s+)"', text)
     return {
+        # is a markdown header or bold text
+        "is_header": 1 if re.match(r"\s*#{2,6}\s[^\n]+\s*$", text) or re.match(r"\s*\*{2}[^\n]+\*{2}\s*$", text) else 0,
         # begins with * or a number or a letter or roman numeral
         "is_list": 1 if re.match(r"\s*(?:\*|\(?[0-9]+[.)]?|\(?[A-Za-z][.)]|\(?[ivx]+[.)])\s", text) else 0,
         # ends in :
@@ -140,7 +85,9 @@ def predict_using_syntactic_features(
         current = 1
         splits = []
         features: Optional[dict[str, int]] = None
-        next_features: Optional[dict[str, int]] = syntactic_feature_generator(paragraphs[0])
+        next_features: Optional[dict[str, int]] = (
+            syntactic_feature_generator(paragraphs[0]) if len(paragraphs) > 0 else None
+        )
         for i in range(len(paragraphs)):
             prev_features = features
             features = next_features
@@ -157,6 +104,7 @@ def predict_using_syntactic_features(
                     and not features["ends_with_colon"]
                     and (next_features is None or not next_features["is_quote"])
                 )
+                or (prev_features is not None and prev_features["is_header"] and prev_features["is_short"])
             ):
                 pass
             else:
@@ -168,19 +116,22 @@ def predict_using_syntactic_features(
 
 
 def group_paragraphs_using_syntactic_features(
-    syntactic_feature_generator: Callable[[str], dict[str, int]], paragraphs: list[str]
+    syntactic_feature_generator: Callable[[str], dict[str, int]], paragraphs: list[str], max_chars: int = 2000
 ) -> list[list[str]]:
     """Group paragraphs using syntactic features."""
     syntactic_predictor = predict_using_syntactic_features(syntactic_feature_generator)
     feature_splits = syntactic_predictor(paragraphs)
     prev_split = None
+    group_len = 0
     paragraph_groups = []
     group: list[str] = []
     for paragraph, feature_split in zip(paragraphs, feature_splits, strict=True):
-        if feature_split != prev_split and len(group) > 0:
+        if len(group) > 0 and (feature_split != prev_split or group_len + len(paragraph) > max_chars):
             paragraph_groups.append(group)
             group = []
+            group_len = 0
         group.append(paragraph)
+        group_len += len(paragraph)
         prev_split = feature_split
     paragraph_groups.append(group)
     return paragraph_groups
@@ -204,6 +155,60 @@ def predict_using_features_and_embeddings(
         for ix in range(1, len(embeddings)):
             score = np.dot(embeddings[ix - 1], embeddings[ix])
             if score < threshold:
+                current += 1
+            splits.extend([current] * len(paragraph_groups[ix]))
+        return splits
+
+    return predict
+
+
+def predict_using_features_and_greedy_embeddings(  # noqa: C901
+    syntactic_feature_generator: Callable[[str], dict[str, int]],
+    embedder: Callable[[list[str]], list[NDArray[np.float32]]],
+    threshold: float,
+    max_chars: int = 2000,
+) -> Callable[[list[str]], list[int]]:
+    """Predict splits using syntactic features followed by embeddings."""
+
+    def _paragraph_group_length(
+        ix: int, paragraph_group_assignments: list[int], paragraph_group_texts: list[str]
+    ) -> int:
+        return sum(
+            len(paragraph_group_texts[i])
+            for i, assignment in enumerate(paragraph_group_assignments)
+            if assignment == paragraph_group_assignments[ix]
+        )
+
+    def _merge_paragraph_groups(ix1: int, ix2: int, paragraph_group_assignments: list[int]) -> None:
+        assignment1 = paragraph_group_assignments[ix1]
+        assignment2 = paragraph_group_assignments[ix2]
+        for ix, assignment in enumerate(paragraph_group_assignments):
+            if assignment == assignment2:
+                paragraph_group_assignments[ix] = assignment1
+
+    def predict(paragraphs: list[str]) -> list[int]:
+        # first group paragraphs using syntactic features
+        paragraph_groups = group_paragraphs_using_syntactic_features(syntactic_feature_generator, paragraphs, max_chars)
+        # next get embeddings for paragraph groups
+        paragraph_group_texts = ["\n".join(group) for group in paragraph_groups]
+        embeddings = embedder(paragraph_group_texts)
+        # finally merge paragraph groups greedily based on embeddings as long as max_chars is not exceeded
+        pair_scores = [np.dot(embeddings[ix], embeddings[ix + 1]) for ix in range(len(paragraph_groups) - 1)]
+        paragraph_group_assignments = [ix for ix in range(len(paragraph_groups))]
+        sorted_pair_scores = sorted(enumerate(pair_scores), key=lambda x: x[1], reverse=True)
+        for ix, score in sorted_pair_scores:
+            if score < threshold:
+                break
+            group_len = _paragraph_group_length(ix, paragraph_group_assignments, paragraph_group_texts)
+            next_group_len = _paragraph_group_length(ix + 1, paragraph_group_assignments, paragraph_group_texts)
+            if group_len + next_group_len > max_chars:
+                continue
+            _merge_paragraph_groups(ix, ix + 1, paragraph_group_assignments)
+        # finally generate splits based on assignments
+        current = 1
+        splits = [current] * len(paragraph_groups[0])
+        for ix in range(1, len(paragraph_groups)):
+            if paragraph_group_assignments[ix] != paragraph_group_assignments[ix - 1]:
                 current += 1
             splits.extend([current] * len(paragraph_groups[ix]))
         return splits

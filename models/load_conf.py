@@ -54,7 +54,10 @@ def load_conference_talk(url: str, html: str, bs_parser: str = "html.parser") ->
     author = soup.select_one("article p.author-name")
     author_role = soup.select_one("article p.author-role")
     body = soup.select_one("article div.body-block")
-    content = clean(_to_markdown(str(body), base_url=url)) if body else ""
+    if body:
+        content = clean(_to_markdown(str(body), base_url=url, heading_style="ATX", strip=["script", "style"]))
+    else:
+        content = ""
     metadata = {
         "year": year,
         "month": month,

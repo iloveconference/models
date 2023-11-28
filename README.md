@@ -21,7 +21,7 @@ Can be repurposed to create models and process data for any semantic search proj
 
 Install rtx: https://github.com/jdx/rtx
 
-- when you cd to the project directory, rtx should install the correct version of python, poetry, and pipx
+- when you cd to the project directory, run `rtx install` to install the correct version of python, poetry, and pipx
 
 Install dependencies using poetry: `poetry install`
 
