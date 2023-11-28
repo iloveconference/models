@@ -191,7 +191,7 @@ def split_on_markdown_headers(content: str, max_chars: int) -> list[tuple[str, l
         (r"(?:^|\n)(?:_{3,})(\n)", "\n"),
         (r"(?:^|\n\n)(?:\*\*([^\n]+)\*\*\s*\n\s*\n)", "\n\n"),
     ]  # noqa: W605
-    text_headers = [(clean_text(content, keep_anchors=True, keep_newlines=True), [])]
+    text_headers: list[tuple[str, list[str]]] = [(clean_text(content, keep_anchors=True, keep_newlines=True), [])]
     for split_point, extra in split_points:
         split_headers = []
         too_long = False

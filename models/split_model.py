@@ -111,10 +111,12 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
         split_threshold: float = 0.83,
         max_chars: int = 2000,
         anchor: str = "anchor",
+        header_separator: str = " / ",
         **kwargs: Any
     ):
         """Initialize by calling SyntacticEmbeddingSplitter."""
         super().__init__(embedder, split_threshold, max_chars, anchor, **kwargs)
+        self.header_separator = header_separator
 
     def transform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
         """Transform documents by splitting them into sections and then splitting each section."""
@@ -122,12 +124,17 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
         transformed_docs: list[Document] = []
         for doc in tqdm(documents, disable=not verbose):
             # get markdown sections
-            for section in split_on_markdown_headers(doc.page_content, self.max_chars):
+            for section, headers in split_on_markdown_headers(doc.page_content, self.max_chars):
                 # split each section
+                metadata = doc.metadata.copy()
+                if self.header_separator and len(headers) > 0:
+                    metadata["title"] += self.header_separator + self.header_separator.join(headers)
+                else:
+                    section = " ".join(headers) + "\n\n" + section
                 transformed_docs.extend(
                     split_document_content(
                         section,
-                        doc.metadata,
+                        metadata,
                         self.parser,
                         self.splitter,
                         self.max_chars,
