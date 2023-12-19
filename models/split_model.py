@@ -24,6 +24,11 @@ from models.split_utils import get_voyageai_embedder
 from models.split_utils import split_on_markdown_headers
 
 
+useless_headers = ["bibliography", "further reading", "abstract"]
+
+min_section_len = 100
+
+
 def split_document_content(
     page_content: str, metadata: dict[str, Any], parser: Any, splitter: Any, max_chars: int, anchor: str
 ) -> list[Document]:
@@ -40,6 +45,8 @@ def split_document_content(
     )
     # create splits
     for split_text_and_id in split_texts_and_ids:
+        if len(split_text_and_id[0]) < min_section_len:
+            continue
         if anchor:
             metadata = metadata.copy()
             metadata[anchor] = split_text_and_id[1]
@@ -125,6 +132,11 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
         for doc in tqdm(documents, disable=not verbose):
             # get markdown sections
             for section, headers in split_on_markdown_headers(doc.page_content, self.max_chars):
+                # skip useless sections
+                if len(headers) > 0 and headers[-1].lower() in useless_headers:
+                    continue
+                if len(section) < min_section_len:
+                    continue
                 # split each section
                 metadata = doc.metadata.copy()
                 if self.header_separator and len(headers) > 0:
