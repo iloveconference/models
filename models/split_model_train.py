@@ -165,8 +165,12 @@ def predict_using_features_and_embeddings(
 def predict_using_features_and_greedy_embeddings(  # noqa: C901
     syntactic_feature_generator: Callable[[str], dict[str, int]],
     embedder: Callable[[list[str]], list[NDArray[np.float32]]],
-    threshold: float,
+    high_similarity_threshold: float = 0.83,
     max_chars: int = 2000,
+    min_chars: int = 100,
+    low_similarity_threshold: float = 0.5,
+    low_max_split_length: int = 400,
+    low_max_length_difference: int = 50,
 ) -> Callable[[list[str]], list[int]]:
     """Predict splits using syntactic features followed by embeddings."""
 
@@ -196,14 +200,25 @@ def predict_using_features_and_greedy_embeddings(  # noqa: C901
         pair_scores = [np.dot(embeddings[ix], embeddings[ix + 1]) for ix in range(len(paragraph_groups) - 1)]
         paragraph_group_assignments = [ix for ix in range(len(paragraph_groups))]
         sorted_pair_scores = sorted(enumerate(pair_scores), key=lambda x: x[1], reverse=True)
+
         for ix, score in sorted_pair_scores:
-            if score < threshold:
+            if score < low_similarity_threshold:
                 break
             group_len = _paragraph_group_length(ix, paragraph_group_assignments, paragraph_group_texts)
             next_group_len = _paragraph_group_length(ix + 1, paragraph_group_assignments, paragraph_group_texts)
+
             if group_len + next_group_len > max_chars:
                 continue
-            _merge_paragraph_groups(ix, ix + 1, paragraph_group_assignments)
+
+            if score >= high_similarity_threshold or (
+                score >= low_similarity_threshold
+                and min_chars <= group_len < low_max_split_length
+                and min_chars <= next_group_len < low_max_split_length
+                and abs(group_len - next_group_len) < low_max_length_difference
+            ):
+                # Merge
+                _merge_paragraph_groups(ix, ix + 1, paragraph_group_assignments)
+
         # finally generate splits based on assignments
         current = 1
         splits = [current] * len(paragraph_groups[0])
