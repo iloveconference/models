@@ -165,12 +165,12 @@ def predict_using_features_and_embeddings(
 def predict_using_features_and_greedy_embeddings(  # noqa: C901
     syntactic_feature_generator: Callable[[str], dict[str, int]],
     embedder: Callable[[list[str]], list[NDArray[np.float32]]],
-    low_similarity_threshold: float = 0.5,
     high_similarity_threshold: float = 0.83,
-    max_split_length: int = 400,
-    min_split_length: int = 100,
-    max_length_difference_low: int = 50,
     max_chars: int = 2000,
+    min_chars: int = 100,
+    low_similarity_threshold: float = 0.5,
+    low_max_split_length: int = 400,
+    low_max_length_difference: int = 50,
 ) -> Callable[[list[str]], list[int]]:
     """Predict splits using syntactic features followed by embeddings."""
 
@@ -212,9 +212,9 @@ def predict_using_features_and_greedy_embeddings(  # noqa: C901
 
             if score >= high_similarity_threshold or (
                 score >= low_similarity_threshold
-                and min_split_length <= group_len < max_split_length
-                and min_split_length <= next_group_len < max_split_length
-                and abs(group_len - next_group_len) < max_length_difference_low
+                and min_chars <= group_len < low_max_split_length
+                and min_chars <= next_group_len < low_max_split_length
+                and abs(group_len - next_group_len) < low_max_length_difference
             ):
                 # Merge
                 _merge_paragraph_groups(ix, ix + 1, paragraph_group_assignments)
