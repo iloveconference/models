@@ -61,6 +61,60 @@ def load_docs_from_jsonl(file_path: str) -> Iterable[Document]:
     return array
 
 
+def create_pages_from_unstructured_elements(
+    elements: list[Document], title: str, start_page: int = 0, url: str = ""
+) -> list[Document]:
+    """Create pages from unstructured elements."""
+    pages = []
+    page_content = ""
+    page_number = 0
+    for element in elements:
+        # skip some elements
+        if element.metadata["category"] in ["Title", "PageBreak", "UncategorizedText"]:
+            continue
+        # skip pages before start_page
+        if element.metadata.get("page_number", 0) < start_page:
+            continue
+        # get element content
+        element_content = element.page_content
+        if element.metadata["category"] == "ListItem":
+            element_content = "* " + element_content
+        if len(element_content.strip()) == 0:
+            continue
+        if element.metadata.get("page_number", 0) != page_number:
+            if len(page_content) > 0:
+                # Create a page
+                title_with_page = f"{title} - {page_number}" if page_number > 0 else title
+                page = Document(
+                    page_content=(page_content + "\n" + element_content).strip(),
+                    metadata={
+                        "title": title_with_page,
+                        "url": url,
+                        "page_number": page_number,
+                    },
+                )
+                pages.append(page)
+                page_content = ""
+            else:
+                page_content = element_content
+            page_number = element.metadata.get("page_number", 0)
+            continue
+        page_content += "\n\n" + element_content
+    if len(page_content) > 0:
+        # Create a page
+        title_with_page = f"{title} - {page_number}" if page_number > 0 else title
+        page = Document(
+            page_content=page_content.strip(),
+            metadata={
+                "title": title_with_page,
+                "url": url,
+                "page_number": page_number,
+            },
+        )
+        pages.append(page)
+    return pages
+
+
 class Loader(BaseLoader):
     """Create Documents for all files in a directory."""
 
@@ -85,7 +139,7 @@ class Loader(BaseLoader):
             doc = self.load_fn(data["url"], data["html"], self.bs_parser)
             if not doc.metadata["title"] or not doc.page_content:
                 if verbose:
-                    print("Missing title or content - skipping", filename)
+                    print("Missing title or content - skipping", data["url"])
                 continue
             docs.append(doc)
         return docs

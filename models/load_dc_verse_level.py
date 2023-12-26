@@ -53,9 +53,11 @@ def load_dc_verse_level(url: str, html: str, bs_parser: str = "html.parser") -> 
     body = get_content(soup)
     content = clean(to_markdown(str(body), base_url=url)) if body else ""
     content = convert_verses_to_headings(content)
+    content = re.sub(r"\n\s*\[\d+\]\(#t\d+\)\.[^\n]*", "", content)
+    clean_content = content.replace("\n(*Doctrine & Covenants Minute*)\n\n**Casey Paul Griffiths** (LDS Scholar)\n", "")
 
     metadata = {
         "url": url,
         "title": clean(title) if title else "",
     }
-    return Document(page_content=content, metadata=metadata)
+    return Document(page_content=clean_content, metadata=metadata)

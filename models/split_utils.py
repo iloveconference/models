@@ -2,9 +2,73 @@
 import os
 import re
 from typing import Any
+from typing import Callable
 from typing import Generator
 from typing import NamedTuple
 from typing import Optional
+from typing import cast
+
+import numpy as np
+from numpy.typing import NDArray
+from voyageai import get_embeddings as get_voyageai_embeddings  # type: ignore
+
+
+def get_mpnet_embedder(
+    mpnet: Any,
+    batch_size: int = 8,
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get mpnet embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        embeds = []
+        for ix in range(0, len(paragraphs), batch_size):
+            ix_end = min(ix + batch_size, len(paragraphs))
+            embeds.extend(mpnet.encode(paragraphs[ix:ix_end]))
+        return cast(list[NDArray[np.float32]], embeds)
+
+    return embed
+
+
+def get_openai_embedder(
+    openai: Any, engine: str = "text-embedding-ada-002"
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get openai embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        res = openai.Embedding.create(input=paragraphs, engine=engine)
+        return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
+
+    return embed
+
+
+def get_cohere_embedder(
+    cohere: Any,
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get cohere embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        # TODO if we end up using cohere, cache embeddings because they're so expensive
+        res = cohere.embed(texts=paragraphs, model="large", truncate="END")
+        return cast(list[NDArray[np.float32]], res.embeddings)
+
+    return embed
+
+
+def get_voyageai_embedder(
+    model: str = "voyage-01", input_type: str = "document"
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+    """Get voyageai embeddings for paragraphs."""
+
+    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        """Get Voyage AI embeddings for paragraphs."""
+        embeds = []
+        # max batch size is 8
+        for ix in range(0, len(paragraphs), 8):
+            ix_end = min(ix + 8, len(paragraphs))
+            embeds.extend(get_voyageai_embeddings(paragraphs[ix:ix_end], model=model, input_type=input_type))
+        return [np.array(emb) for emb in embeds]
+
+    return embed
 
 
 def get_filenames(directory: str) -> list[str]:
@@ -22,16 +86,42 @@ def get_sections(text: str) -> Generator[tuple[str, str], None, None]:
             yield section_title, region.strip()
 
 
-def clean_text(text: str) -> str:
+def remove_markdown(text: str) -> str:
+    """Remove markdown markup from the given text."""
+    # copied from server repo: search_utils.py
+    # Patterns to remove (basic Markdown syntax)
+    patterns = [
+        (r"\!\[(.*?)\]\(.*?\)", "\\1"),  # Images
+        (r"\[(.*?)\]\(.*?\)", "\\1"),  # Links
+        (r"\*{1,2}(.*?)\*{1,2}", "\\1"),  # Bold and Italic
+        (r"\~{2}(.*?)\~{2}", "\\1"),  # Strikethrough
+        (r"\`{1,3}(.*?)\`{1,3}", "\\1"),  # Inline code and code blocks
+        (r"(?:^|\n) *\> *(.*)", "\n\\1"),  # Blockquotes
+        (r"(?:^|\n) *\* *(.*)", "\n\\1"),  # Lists
+        (r"(?:^|\n) *\d+\.? *(.*)", "\n\\1"),  # Lists
+        (r"(?:^|\n) *\#{1,6} *", "\n\n"),  # Headers
+        (r"(?:^|\n)\-{3,}\s", "\n"),  # Horizontal rules
+        (r"(?:^|\n)\={3,}\s", "\n"),  # Horizontal rules
+        (r"(\n *){2,}", "\n"),  # Extra newlines
+        (r"\ {2,}", " "),  # Extra spaces
+    ]
+    # Remove each pattern from the text
+    for pattern, replacement in patterns:
+        text = re.sub(pattern, replacement, text)
+    return text
+
+
+def clean_text(text: str, keep_anchors: bool = False, keep_newlines: bool = False) -> str:
     """Clean text: remove headers, images, links, anchors, and extra whitespace."""
-    # remove headers
+    # remove horizontal lines
     text = re.sub(r"[^\n]+\n-{4,}(\n|$)", "", text)
     # remove images
-    text = re.sub(r"!\[\]\(\)\s+Image[^\n]+\n", "", text)
+    text = re.sub(r"!\[([^\]]*)\]\([^\)]*\)(\s+Image[^\n]+)?", "", text)
     # remove links
-    text = re.sub(r"(\[[^\]]+\])\([^\)]+\)", r"\1", text)
+    text = re.sub(r"\[([^\]]*)\]\([^\)]+\)", r"\1", text)
     # remove anchors
-    text = re.sub(r"<a name=\"[^\"]+\"></a>", "", text)
+    if not keep_anchors:
+        text = re.sub(r"<a name=\"[^\"]+\"></a>", "", text)
     # remove citations
     text = re.sub(r"\[[0-9]+\]", "", text)
     # convert fancy quotes to quotes
@@ -39,12 +129,19 @@ def clean_text(text: str) -> str:
     text = re.sub(r"[“”]", '"', text)
     # convert nbsp and zero-width space to space
     text = text.replace("\u00a0", " ").replace("\u200b", " ")
+    # remove carriage returns and tabs
+    text = text.replace("\r", "").replace("\t", " ")
     # remove newlines and tabs
-    text = text.replace("\n", " ").replace("\r", " ").replace("\t", " ")
+    if not keep_newlines:
+        text = text.replace("\n", " ")
     # remove extra whitespace
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r" +", " ", text)
     # strip
-    text = text.strip()
+    text = text.lstrip()
+    if not keep_newlines:
+        text = text.rstrip()
+    else:
+        text = re.sub(r"(\s*\n){2,}", "\n\n", text)
     return text
 
 
@@ -57,15 +154,108 @@ def get_paragraph_id(paragraph: str) -> str:
     return ""
 
 
+def get_paragraph_sentence_texts_and_ids(  # noqa: C901
+    content: str, parser: Any, max_chars: int
+) -> list[tuple[str, str]]:
+    """Get paragraphs, lines, or sentences (text, anchor) from contents."""
+    split_points = ["\n\n", "\n", "SENTENCE", ""]
+    texts = [clean_text(content, keep_anchors=True, keep_newlines=True)]
+    for split_point in split_points:
+        if split_point == "SENTENCE" and parser is None:
+            continue
+        splits = []
+        too_long = False
+        for text in texts:
+            if len(text) > max_chars:
+                too_long = True
+                # split at split point
+                if split_point == "SENTENCE":
+                    ts = [sent.text for sent in parser(text).sents]
+                elif split_point == "":
+                    ts = []
+                    for ix in range(0, len(text), max_chars):
+                        ts.append(text[ix : ix + max_chars])
+                else:
+                    ts = text.split(split_point)
+                # extra is the split point unless we split on sentences
+                extra = split_point if split_point != "SENTENCE" else " "
+                for t in ts:
+                    splits.append(t + extra)
+            else:
+                splits.append(text)
+        if not too_long:
+            break
+        texts = splits
+
+    # add paragraph IDs
+    paragraph_texts_and_ids = []
+    curr_id = ""
+    prev_text = ""
+    for text in texts:
+        if text.strip() == "":
+            prev_text += text
+            continue
+        if prev_text:
+            paragraph_texts_and_ids.append((clean_text(prev_text, keep_newlines=True), curr_id))
+        prev_text = text
+        _id = get_paragraph_id(text)
+        if _id:
+            curr_id = _id
+    if prev_text:
+        paragraph_texts_and_ids.append((clean_text(prev_text, keep_newlines=True), curr_id))
+    return paragraph_texts_and_ids
+
+
+def split_on_markdown_headers(content: str, max_chars: int) -> list[tuple[str, list[str]]]:
+    """Split text on markdown headers."""
+    split_points = [
+        (r"(?:^|\n)(?:# ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:## ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:#### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:##### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:###### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:\*{3,})(\n)", "\n"),
+        (r"(?:^|\n)(?:-{3,})(\n)", "\n"),
+        (r"(?:^|\n)(?:_{3,})(\n)", "\n"),
+        (r"(?:^|\n\n)(?:\*\*([^\n]+)\*\*\s*\n\s*\n)", "\n\n"),
+    ]  # noqa: W605
+    text_headers: list[tuple[str, list[str]]] = [(clean_text(content, keep_anchors=True, keep_newlines=True), [])]
+    for split_point, extra in split_points:
+        split_headers = []
+        too_long = False
+        for text, headers in text_headers:
+            if len(text) > max_chars:
+                too_long = True
+                # split at split point
+                parts = re.split(split_point, text)
+                if len(parts[0].strip()) > 0:
+                    split_headers.append((parts[0].lstrip() + (extra if len(parts) > 1 else ""), headers))
+                for ix in range(1, len(parts), 2):
+                    part = parts[ix + 1]
+                    if ix < len(parts) - 2:
+                        part += extra
+                    # clean header
+                    header = clean_text(remove_markdown(parts[ix])).strip()
+                    new_headers = headers + [header] if len(header) > 0 else headers
+                    split_headers.append((part.lstrip(), new_headers))
+            else:
+                split_headers.append((text, headers))
+        if not too_long:
+            break
+        text_headers = split_headers
+    return text_headers
+
+
 def get_paragraph_texts_and_ids(contents: str) -> list[tuple[str, str]]:
     """Get paragraphs (text, anchor) from contents."""
     paragraphs = []
     for paragraph in contents.split("\n\n"):
         _id = get_paragraph_id(paragraph)
-        paragraph = clean_text(paragraph)
+        paragraph = clean_text(paragraph).strip()
         if not paragraph:
             continue
-        paragraphs.append((paragraph, _id))
+        paragraphs.append((paragraph + "\n\n", _id))
     return paragraphs
 
 
@@ -75,7 +265,7 @@ def _count_words(texts: list[str]) -> int:
 
 
 def get_split_texts_and_ids(
-    paragraph_texts_and_ids: list[tuple[str, str]], split_ixs: list[int], max_split_len: int
+    paragraph_texts_and_ids: list[tuple[str, str]], split_ixs: list[int], max_split_len: Optional[int] = None
 ) -> list[tuple[str, str]]:
     """Group paragraphs into splits, and use the earliest anchor as the split ID."""
     splits = []
@@ -83,9 +273,11 @@ def get_split_texts_and_ids(
     curr_split_ix = 0
     curr_split: list[str] = []
     for (paragraph, _id), split_ix in zip(paragraph_texts_and_ids, split_ixs, strict=True):
-        if split_ix != curr_split_ix or _count_words(curr_split) + _count_words([paragraph]) > max_split_len:
+        if split_ix != curr_split_ix or (
+            max_split_len is not None and _count_words(curr_split) + _count_words([paragraph]) > max_split_len
+        ):
             if len(curr_split) > 0:
-                splits.append(("\n\n\n".join(curr_split), curr_split_id))
+                splits.append(("".join(curr_split).strip(), curr_split_id))
             if split_ix == curr_split_ix:
                 curr_split = [curr_split[-1]]  # overlap
             else:
@@ -96,7 +288,7 @@ def get_split_texts_and_ids(
             curr_split_id = _id
         curr_split.append(paragraph)
     if len(curr_split) > 0:
-        splits.append(("\n\n\n".join(curr_split), curr_split_id))
+        splits.append(("".join(curr_split).strip(), curr_split_id))
     return splits
 
 

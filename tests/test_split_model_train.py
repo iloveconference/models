@@ -67,44 +67,56 @@ def test_syntactic_paragraph_features() -> None:
     """It returns the syntactic features for a paragraph."""
     tests = [
         (
+            "## Header",
+            {"is_header": 1, "is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+        ),
+        (
+            "**Header**",
+            {"is_header": 1, "is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+        ),
+        (
+            "**Not really a header because it has more than twelve words in the line**",
+            {"is_header": 1, "is_list": 0, "ends_with_colon": 0, "is_short": 0, "is_quote": 0},
+        ),
+        (
             "* Hello, world!",
-            {"is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            {"is_header": 0, "is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
         (
-            "(1) This",
-            {"is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            "(1) This  ## Not a header",
+            {"is_header": 0, "is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
         (
-            "10 And that",
-            {"is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            "10 And that  ## Also not a header",
+            {"is_header": 0, "is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
         (
             "I. am that I AM",
-            {"is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            {"is_header": 0, "is_list": 1, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
         (
             "I am he who was",
-            {"is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            {"is_header": 0, "is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
         (
             "ends in colon:",
-            {"is_list": 0, "ends_with_colon": 1, "is_short": 1, "is_quote": 0},
+            {"is_header": 0, "is_list": 0, "ends_with_colon": 1, "is_short": 1, "is_quote": 0},
         ),
         (
             'and again, "I say unto you that Christ shall come into the world',
-            {"is_list": 0, "ends_with_colon": 0, "is_short": 0, "is_quote": 1},
+            {"is_header": 0, "is_list": 0, "ends_with_colon": 0, "is_short": 0, "is_quote": 1},
         ),
         (
             '"This is my body',
-            {"is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 1},
+            {"is_header": 0, "is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 1},
         ),
         (
             'Not a "Quote"',
-            {"is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            {"is_header": 0, "is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
         (
             'This is also not a: "Quote"',
-            {"is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
+            {"is_header": 0, "is_list": 0, "ends_with_colon": 0, "is_short": 1, "is_quote": 0},
         ),
     ]
 
@@ -217,6 +229,57 @@ def test_predict_using_features_and_embeddings() -> None:
 
     predictor = split_model_train.predict_using_features_and_embeddings(
         split_model_train.syntactic_paragraph_features, dummy_embedder, threshold
+    )
+
+    result = predictor(paragraphs)
+
+    assert result == expected_output, f"Expected {expected_output}, but got {result}"
+
+
+def test_predict_using_features_and_greedy_embeddings() -> None:
+    """It predicts the splits for each paragraph using the syntactic features followed by greedy embeddings."""
+
+    def dummy_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+        embeddings = [
+            np.array([0.5, 0.5], dtype=np.float32),
+            np.array([0.6, 0.4], dtype=np.float32),
+            np.array([0.6, 0.45], dtype=np.float32),
+            np.array([0.7, 0.3], dtype=np.float32),
+            np.array([0.6, 0.4], dtype=np.float32),
+            np.array([0.6, 0.45], dtype=np.float32),
+            np.array([0.4, 0.6], dtype=np.float32),
+        ]
+        return embeddings
+
+    paragraphs = [
+        "Hello, world! ",  # 0
+        "this is a long sentence that should not be combined with the one above",  # 1 -> 0
+        "* List item that is long but it should be combined with the one above",
+        "* Another list item that is long so it should not be combined with the one above",  # 2
+        "this is a long sentence that should not be combined with the one above",  # 3 -> 2
+        "Ends in a colon:",  # 4
+        "this is a long sentence that should be combined with the one above",
+        '"This is a quote that is long so it should not be combined with the sentence above. ',
+        '"And another quote that should also be combined. ',  # 5
+        "A short sentence not to be combined with the one above",
+        "A similar sentence to be combined with the one above",
+        "Short sentence to be combined with the one below. ",  # 6
+        '"Another quote. ',
+    ]
+
+    threshold = 0.5
+
+    expected_output = [1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5]
+
+    predictor = split_model_train.predict_using_features_and_greedy_embeddings(
+        split_model_train.syntactic_paragraph_features,
+        dummy_embedder,
+        high_similarity_threshold=threshold,
+        max_chars=200,
+        min_chars=0,
+        low_similarity_threshold=0.5,
+        low_max_split_length=0,
+        low_max_length_difference=0,
     )
 
     result = predictor(paragraphs)
