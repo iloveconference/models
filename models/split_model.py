@@ -24,8 +24,11 @@ from models.split_utils import get_voyageai_embedder
 from models.split_utils import split_on_markdown_headers
 
 
+useless_headers = ["bibliography", "further reading", "abstract"]
+
+
 def split_document_content(
-    page_content: str, metadata: dict[str, Any], parser: Any, splitter: Any, max_chars: int, anchor: str
+    page_content: str, metadata: dict[str, Any], parser: Any, splitter: Any, min_chars: int, max_chars: int, anchor: str
 ) -> list[Document]:
     """Split document content into chunks."""
     docs = []
@@ -40,6 +43,8 @@ def split_document_content(
     )
     # create splits
     for split_text_and_id in split_texts_and_ids:
+        if len(split_text_and_id[0]) < min_chars:
+            continue
         if anchor:
             metadata = metadata.copy()
             metadata[anchor] = split_text_and_id[1]
@@ -55,15 +60,20 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
     def __init__(
         self,
         embedder: Any = None,
-        split_threshold: float = 0.83,
+        high_split_threshold: float = 0.83,
         max_chars: int = 2000,
         anchor: str = "anchor",
+        min_chars: int = 100,
+        low_split_threshold: float = 0.5,
+        low_max_split_length: int = 400,
+        low_max_length_difference: int = 50,
         **kwargs: Any
     ):
         """Initialize."""
         super().__init__(**kwargs)
 
         self.max_chars = max_chars
+        self.min_chars = min_chars
         self.anchor = anchor
         # init spacy
         self.parser = spacy.load("en_core_web_sm")
@@ -72,7 +82,14 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
             embedder = get_voyageai_embedder()
 
         self.splitter = predict_using_features_and_greedy_embeddings(
-            syntactic_paragraph_features, embedder, split_threshold, max_chars
+            syntactic_feature_generator=syntactic_paragraph_features,
+            embedder=embedder,
+            high_similarity_threshold=high_split_threshold,
+            max_chars=max_chars,
+            min_chars=min_chars,
+            low_similarity_threshold=low_split_threshold,
+            low_max_split_length=low_max_split_length,
+            low_max_length_difference=low_max_length_difference,
         )
 
     def transform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
@@ -87,6 +104,7 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
                     doc.metadata,
                     self.parser,
                     self.splitter,
+                    self.min_chars,
                     self.max_chars,
                     self.anchor,
                 )
@@ -108,14 +126,28 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
     def __init__(
         self,
         embedder: Any = None,
-        split_threshold: float = 0.83,
+        high_split_threshold: float = 0.83,
         max_chars: int = 2000,
+        min_chars: int = 100,
+        low_split_threshold: float = 0.5,
+        low_max_split_length: int = 400,
+        low_max_length_difference: int = 50,
         anchor: str = "anchor",
         header_separator: str = " / ",
         **kwargs: Any
     ):
         """Initialize by calling SyntacticEmbeddingSplitter."""
-        super().__init__(embedder, split_threshold, max_chars, anchor, **kwargs)
+        super().__init__(
+            embedder,
+            high_split_threshold=high_split_threshold,
+            max_chars=max_chars,
+            anchor=anchor,
+            min_chars=min_chars,
+            low_split_threshold=low_split_threshold,
+            low_max_split_length=low_max_split_length,
+            low_max_length_difference=low_max_length_difference,
+            **kwargs,
+        )
         self.header_separator = header_separator
 
     def transform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
@@ -125,6 +157,11 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
         for doc in tqdm(documents, disable=not verbose):
             # get markdown sections
             for section, headers in split_on_markdown_headers(doc.page_content, self.max_chars):
+                # skip useless sections
+                if len(headers) > 0 and headers[-1].lower() in useless_headers:
+                    continue
+                if len(section) < self.min_chars:
+                    continue
                 # split each section
                 metadata = doc.metadata.copy()
                 if self.header_separator and len(headers) > 0:
@@ -137,6 +174,7 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
                         metadata,
                         self.parser,
                         self.splitter,
+                        self.min_chars,
                         self.max_chars,
                         self.anchor,
                     )

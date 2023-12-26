@@ -13,9 +13,9 @@ from models.load_utils import to_markdown
 def clean_text(markdown_content: str) -> Any:
     """Remove unwanted texts from dc people content."""
     # init return text
-    text_data = ""
+    text_data = markdown_content
 
-    # Search for the position of "abstract" (case insensitive)
+    # Search for the position of a footnote
     text_match = re.search(r"^\[\d+\]\(#t\d+\)\.", markdown_content, re.IGNORECASE | re.MULTILINE)
 
     if text_match:

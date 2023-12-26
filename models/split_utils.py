@@ -54,17 +54,19 @@ def get_cohere_embedder(
     return embed
 
 
-def get_voyageai_embedder() -> Callable[[list[str]], list[NDArray[np.float32]]]:
+def get_voyageai_embedder(
+    model: str = "voyage-01", input_type: str = "document"
+) -> Callable[[list[str]], list[NDArray[np.float32]]]:
     """Get voyageai embeddings for paragraphs."""
 
     def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
         """Get Voyage AI embeddings for paragraphs."""
         embeds = []
-        # batch size is 8
+        # max batch size is 8
         for ix in range(0, len(paragraphs), 8):
             ix_end = min(ix + 8, len(paragraphs))
-            embeds.extend(get_voyageai_embeddings(paragraphs[ix:ix_end], model="voyage-01", input_type="document"))
-        return embeds
+            embeds.extend(get_voyageai_embeddings(paragraphs[ix:ix_end], model=model, input_type=input_type))
+        return [np.array(emb) for emb in embeds]
 
     return embed
 
@@ -82,6 +84,31 @@ def get_sections(text: str) -> Generator[tuple[str, str], None, None]:
             section_title = region.strip()
         elif len(region.strip()) > 0:
             yield section_title, region.strip()
+
+
+def remove_markdown(text: str) -> str:
+    """Remove markdown markup from the given text."""
+    # copied from server repo: search_utils.py
+    # Patterns to remove (basic Markdown syntax)
+    patterns = [
+        (r"\!\[(.*?)\]\(.*?\)", "\\1"),  # Images
+        (r"\[(.*?)\]\(.*?\)", "\\1"),  # Links
+        (r"\*{1,2}(.*?)\*{1,2}", "\\1"),  # Bold and Italic
+        (r"\~{2}(.*?)\~{2}", "\\1"),  # Strikethrough
+        (r"\`{1,3}(.*?)\`{1,3}", "\\1"),  # Inline code and code blocks
+        (r"(?:^|\n) *\> *(.*)", "\n\\1"),  # Blockquotes
+        (r"(?:^|\n) *\* *(.*)", "\n\\1"),  # Lists
+        (r"(?:^|\n) *\d+\.? *(.*)", "\n\\1"),  # Lists
+        (r"(?:^|\n) *\#{1,6} *", "\n\n"),  # Headers
+        (r"(?:^|\n)\-{3,}\s", "\n"),  # Horizontal rules
+        (r"(?:^|\n)\={3,}\s", "\n"),  # Horizontal rules
+        (r"(\n *){2,}", "\n"),  # Extra newlines
+        (r"\ {2,}", " "),  # Extra spaces
+    ]
+    # Remove each pattern from the text
+    for pattern, replacement in patterns:
+        text = re.sub(pattern, replacement, text)
+    return text
 
 
 def clean_text(text: str, keep_anchors: bool = False, keep_newlines: bool = False) -> str:
@@ -186,6 +213,8 @@ def split_on_markdown_headers(content: str, max_chars: int) -> list[tuple[str, l
         (r"(?:^|\n)(?:## ([^\n]+)\n)", "\n"),
         (r"(?:^|\n)(?:### ([^\n]+)\n)", "\n"),
         (r"(?:^|\n)(?:#### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:##### ([^\n]+)\n)", "\n"),
+        (r"(?:^|\n)(?:###### ([^\n]+)\n)", "\n"),
         (r"(?:^|\n)(?:\*{3,})(\n)", "\n"),
         (r"(?:^|\n)(?:-{3,})(\n)", "\n"),
         (r"(?:^|\n)(?:_{3,})(\n)", "\n"),
@@ -206,7 +235,8 @@ def split_on_markdown_headers(content: str, max_chars: int) -> list[tuple[str, l
                     part = parts[ix + 1]
                     if ix < len(parts) - 2:
                         part += extra
-                    header = parts[ix].strip()
+                    # clean header
+                    header = clean_text(remove_markdown(parts[ix])).strip()
                     new_headers = headers + [header] if len(header) > 0 else headers
                     split_headers.append((part.lstrip(), new_headers))
             else:

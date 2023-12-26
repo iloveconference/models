@@ -272,7 +272,14 @@ def test_predict_using_features_and_greedy_embeddings() -> None:
     expected_output = [1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5]
 
     predictor = split_model_train.predict_using_features_and_greedy_embeddings(
-        split_model_train.syntactic_paragraph_features, dummy_embedder, threshold, 200
+        split_model_train.syntactic_paragraph_features,
+        dummy_embedder,
+        high_similarity_threshold=threshold,
+        max_chars=200,
+        min_chars=0,
+        low_similarity_threshold=0.5,
+        low_max_split_length=0,
+        low_max_length_difference=0,
     )
 
     result = predictor(paragraphs)

@@ -2,9 +2,15 @@
 import hashlib
 import time
 from typing import Any
+from typing import List
+from typing import cast
 
 from langchain.schema.document import Document
+from langchain.schema.embeddings import Embeddings
 from tqdm.auto import tqdm
+
+from models.split_utils import get_voyageai_embedder
+from models.split_utils import remove_markdown
 
 
 def get_doc_id(doc: Document) -> str:
@@ -19,6 +25,30 @@ def get_doc_id(doc: Document) -> str:
     return sha256.hexdigest()
 
 
+class VoyageAIEmbedder(Embeddings):
+    """Voyage AI Embedder."""
+
+    def __init__(self, model: str = "voyage-01", input_type: str = "document"):
+        """Initialize."""
+        self.embedder = get_voyageai_embedder(model, input_type)
+
+    def embed_documents(self, paragraphs: list[str]) -> list[list[float]]:
+        """Get Voyage AI embeddings for paragraphs."""
+        return cast(list[list[float]], [emb.tolist() for emb in self.embedder(paragraphs)])
+
+    def embed_query(self, text: str) -> List[float]:
+        """Get Voyage AI embeddings for a query."""
+        return cast(list[float], self.embedder([text])[0].tolist())
+
+    async def aembed_documents(self, texts: List[str]) -> List[List[float]]:
+        """Get asynchronous Voyage AI embeddings for paragraphs, not implemented."""
+        raise NotImplementedError(f"{self.__class__.__name__} does not implement aembed_documents()")
+
+    async def aembed_query(self, text: str) -> List[float]:
+        """Get asynchronous Voyage AI embeddings for a query, not implemented."""
+        raise NotImplementedError(f"{self.__class__.__name__} does not implement aembed_query()")
+
+
 def embed_documents(embedder: Any, docs: list[Document], batch_size: int = 100, delay: float = 1.0) -> list[Any]:
     """Return document embeddings using an embedder."""
     embeddings = []
@@ -27,7 +57,9 @@ def embed_documents(embedder: Any, docs: list[Document], batch_size: int = 100, 
         time.sleep(delay)
         # set end position of batch
         i_end = min(i + batch_size, len(docs))
-        text_batch = [f"{doc.metadata['title']}\n\n{doc.page_content}" for doc in docs[i:i_end]]
+        text_batch = [
+            remove_markdown(f"{doc.metadata['title']}\n\n{doc.page_content}").strip() for doc in docs[i:i_end]
+        ]
         embed_batch = embedder.embed_documents(text_batch)
         embeddings.extend(embed_batch)
     return embeddings
