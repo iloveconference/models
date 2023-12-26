@@ -210,6 +210,8 @@ def predict_using_features_and_greedy_embeddings(  # noqa: C901
             if group_len + next_group_len > max_chars:
                 continue
 
+            # If a long paragraph is split into sentences, do we want min_chars to be lower
+            # and low_max_length_difference to be higher so that individual sentences are more likely to get combined?
             if score >= high_similarity_threshold or (
                 score >= low_similarity_threshold
                 and min_chars <= group_len < low_max_split_length
