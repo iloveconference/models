@@ -25,7 +25,7 @@ datasets = "^2.10.1"
 python-dotenv = "^1.0.0"
 transformers = "^4.27.1"
 nltk = "^3.8.1"
-torch = "2.0.0"
+torch = {version = "^2.1.0", source = "pytorch-cpu"}
 cohere = "^4.1.1"
 sentence-transformers = "^2.2.2"
 spacy = "^3.7.2"
@@ -34,7 +34,7 @@ types-tqdm = "^4.65.0.1"
 markdownify = "^0.11.6"
 boto3 = "^1.26.113"
 ipykernel = "^6.22.0"
-wandb = "^0.15.0"
+wandb = "^0.16.0"
 langchain = "^0.0.306"
 jupyterlab = "^4.0.6"
 tiktoken = "^0.5.1"
@@ -109,6 +109,11 @@ warn_unreachable = true
 pretty = true
 show_column_numbers = true
 show_error_context = true
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
