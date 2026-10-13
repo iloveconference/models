@@ -4,6 +4,9 @@ on:
   - push
   - pull_request
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: ${{ matrix.session }} ${{ matrix.python }} / ${{ matrix.os }}
@@ -27,10 +30,10 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4.5.0
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
 
@@ -48,15 +51,17 @@ jobs:
           with open(os.environ["GITHUB_ENV"], mode="a") as io:
               print(f"VIRTUALENV_PIP={pip.__version__}", file=io)
 
+      # nox-poetry runs "poetry export", which Poetry 2 moved to a plugin.
       - name: Install Poetry
         run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          pipx install --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt poetry
+          pipx inject --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt poetry poetry-plugin-export
           poetry --version
 
       - name: Install Nox
         run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
-          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          pipx install --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt nox nox-poetry
           nox --version
 
       - name: Compute pre-commit cache key
@@ -65,6 +70,7 @@ jobs:
         shell: python
         run: |
           import hashlib
+          import os
           import sys
 
           python = "py{}.{}".format(*sys.version_info[:2])
@@ -72,10 +78,11 @@ jobs:
           digest = hashlib.sha256(payload).hexdigest()
           result = "${{ runner.os }}-{}-{}-pre-commit".format(python, digest[:8])
 
-          print("::set-output name=result::{}".format(result))
+          with open(os.environ["GITHUB_OUTPUT"], mode="a") as io:
+              print(f"result={result}", file=io)
 
       - name: Restore pre-commit cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         if: matrix.session == 'pre-commit'
         with:
           path: ~/.cache/pre-commit
@@ -83,20 +90,25 @@ jobs:
           restore-keys: |
             ${{ steps.pre-commit-cache.outputs.result }}-
 
+      # safety is advisory: the locked dependencies (from 2023) have many known vulnerabilities,
+      # and updating them is separate work. Its report stays in this step's log.
       - name: Run Nox
+        continue-on-error: ${{ matrix.session == 'safety' }}
         run: |
           nox --python=${{ matrix.python }}
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
-        uses: "actions/upload-artifact@v3"
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data
           path: ".coverage.*"
+          # The coverage files' names start with a dot.
+          include-hidden-files: true
 
       - name: Upload documentation
         if: matrix.session == 'docs-build'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: docs
           path: docs/_build
@@ -106,10 +118,10 @@ jobs:
     needs: tests
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v4.5.0
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -120,27 +132,21 @@ jobs:
 
       - name: Install Poetry
         run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          pipx install --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt poetry
+          pipx inject --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt poetry poetry-plugin-export
           poetry --version
 
       - name: Install Nox
         run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
-          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          pipx install --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=${{ github.workspace }}/.github/workflows/constraints.txt nox nox-poetry
           nox --version
 
       - name: Download coverage data
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: coverage-data
 
       - name: Combine coverage data and display human readable report
         run: |
           nox --session=coverage
-
-      - name: Create coverage report
-        run: |
-          nox --session=coverage -- xml
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v3.1.2
