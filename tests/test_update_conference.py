@@ -1427,7 +1427,7 @@ def test_write_probe_skip_touches_nothing(tmp_path: Path) -> None:
 def test_the_default_probe_writes_nothing_and_targets_an_impossible_id(tmp_path: Path) -> None:
     """The update probe traverses the write path without creating a vector.
 
-    An update against an id that cannot exist is a server-side no-op, so unlike PLAN.md's
+    An update against an id that cannot exist is a server-side no-op, so unlike the
     canary it never puts anything in production - and the inherited upsert and delete
     fail the test if the implementation ever drifts back to writing one.
 
@@ -1512,7 +1512,7 @@ class _CanaryIndex:
 
 
 def test_the_canary_writes_one_vector_and_takes_it_back_out(tmp_path: Path) -> None:
-    """PLAN.md's canary leaves the index exactly as it found it.
+    """The canary probe leaves the index exactly as it found it.
 
     --write-probe=canary is a documented fallback, so the path has to be known-good even
     though the default probe writes nothing. Exercised against an in-memory index: no

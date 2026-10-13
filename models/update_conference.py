@@ -739,8 +739,10 @@ def check_era(year: int, month: str) -> None:
         "\n"
         "Re-indexing a pre-2023-10 conference requires deleting its existing vectors\n"
         "first, which is a separate, deliberate operation that this script does not\n"
-        'perform and must not be taught to perform. See PLAN.md, "The index already\n'
-        'has two eras".\n'
+        "perform and must not be taught to perform. Vectors before 2023-10 use integer\n"
+        "ids and were embedded on the chunk text alone; everything after uses a sha256\n"
+        "of url+text and embeds title+text. A content-hash id cannot overwrite an\n"
+        "integer one, so a run here would silently duplicate rather than replace.\n"
         "\n"
         "--force does not override this.\n"
         "Nothing was read, crawled, or written. Exiting.",
@@ -1062,9 +1064,8 @@ def _probe_refused(error: ApiError, fingerprint: str, source: str) -> NoReturn:
 def _run_canary(ctx: Ctx, fingerprint: str, source: str) -> None:
     """Write a throwaway vector, confirm it, and remove it.
 
-    This is PLAN.md's canary. It really does put a vector in production for about a
-    second; run_update_probe is the default because it proves the same thing without
-    writing anything.
+    It really does put a vector in production for about a second, which is why
+    run_update_probe is the default: that proves the same thing without writing.
 
     Args:
         ctx: the run context.
@@ -1129,7 +1130,7 @@ def _run_update_probe(ctx: Ctx, fingerprint: str, source: str) -> None:
 
     An update against an id that cannot exist is a no-op at the server, so no vector is
     ever created - but the request still traverses the data-plane write path, and a
-    read-only key still returns 403. Same signal as PLAN.md's canary, none of its
+    read-only key still returns 403. Same signal as the canary above, none of its
     exposure.
 
     Args:
@@ -2357,7 +2358,7 @@ def print_dry_run(ctx: Ctx, manifest: dict[str, Any], batches: list[list[Any]]) 
 
 
 def print_summary(ctx: Ctx, manifest: dict[str, Any], stats: dict[str, Any]) -> None:
-    """Print the closing summary that feeds PLAN.md's Verification section.
+    """Print the closing summary the operator checks the run against.
 
     Args:
         ctx: the run context.
@@ -2383,7 +2384,8 @@ def print_summary(ctx: Ctx, manifest: dict[str, Any], stats: dict[str, Any]) -> 
         f"  rollback:   delete the {manifest['chunk_count']} ids in planned_upsert.chunk_ids "
         "(never by {year,month} filter)"
     )
-    _echo("  next: PLAN.md Verification 2-3")
+    _echo("  next: confirm the new talks answer a question only they can, then bump")
+    _echo("        LATEST_CONFERENCE_YEAR in client/src/lib/coverage.ts (see README)")
     _warn_if_site_year_is_stale(ctx.year)
 
 
@@ -2657,8 +2659,8 @@ def _sync_voyage_api_key() -> None:
     default="update",
     show_default=True,
     help="How to prove the key may write, before the crawl. 'update' touches an id that cannot "
-    "exist, so nothing is ever written. 'canary' is PLAN.md's original: a real vector in "
-    "production for about a second, then deleted. 'skip' tests nothing.",
+    "exist, so nothing is ever written. 'canary' writes a real vector into "
+    "production for about a second, then deletes it. 'skip' tests nothing.",
 )
 @click.version_option()
 def main(
