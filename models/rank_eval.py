@@ -6,7 +6,7 @@ from typing import cast
 
 import cohere  # type: ignore
 import numpy as np
-import openai
+from openai import OpenAI
 from sentence_transformers import SentenceTransformer  # type: ignore
 from sklearn.metrics import ndcg_score  # type: ignore
 
@@ -16,11 +16,11 @@ def get_embeddings_fn(model_name: str) -> Callable[[list[str]], list[list[float]
     if model_name == "text-embedding-ada-002":
         # embedding_len = 1536, metric = "cosine"
         # init openai
-        openai.api_key = os.environ["OPENAI_API_KEY"]
+        openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
         def get_embeddings(texts: list[str]) -> list[list[float]]:
-            res = openai.Embedding.create(input=texts, engine=model_name)  # type: ignore
-            return [cast(list[float], record["embedding"]) for record in res["data"]]
+            res = openai_client.embeddings.create(input=texts, model=model_name)
+            return [record.embedding for record in res.data]
 
         return get_embeddings
     elif model_name == "embed-english-v2.0":

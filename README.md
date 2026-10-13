@@ -19,9 +19,7 @@ Can be repurposed to create models and process data for any semantic search proj
 
 ## Installation
 
-Install rtx: https://github.com/jdx/rtx
-
-- when you cd to the project directory, run `rtx install` to install the correct version of python, poetry, and pipx
+Requires Python 3.12.
 
 Install dependencies using poetry: `poetry install`
 
@@ -40,11 +38,72 @@ PINECONE_KEY=your_pinecone_api_key (found on API keys page)
 PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
 ```
 
-## Downloading data
+## Adding a new conference
 
-`mkdir data`
+General Conference happens twice a year, in April and October. A week or so after it
+ends, add it to the search index with one command per conference:
 
-`aws s3 sync s3://scripturecentralqa.data data`
+```console
+poetry run python -m models.update_conference --year 2026 --month 10
+```
+
+That is the whole routine. No environment setup is needed — the script loads
+`models/.env` itself and reads the **production** Pinecone key from `../server/.env`.
+It never uses `models/.env`'s `PINECONE_API_KEY`, which points at an empty dev project.
+
+It runs four stages, each writing to `data/update/<year>-<month>/` so a crash resumes
+instead of restarting:
+
+| Stage  | What it does                                                              |
+| ------ | ------------------------------------------------------------------------- |
+| crawl  | fetches the listing page and each talk, politely (`--delay`, default 10s) |
+| load   | converts the HTML to markdown and extracts title, author, url, anchors    |
+| split  | chunks each talk with the trained splitter (voyage-01, threshold 0.83)    |
+| upsert | embeds each chunk with `text-embedding-ada-002` and writes to Pinecone    |
+
+Expect roughly 6-10 minutes for a 35-talk conference, almost all of it the crawl delay.
+
+### Before you write to production
+
+Do a dry run first. It performs the crawl, load, and split for real, then prints
+exactly what it would upsert without spending an embedding token or writing anything:
+
+```console
+poetry run python -m models.update_conference --year 2026 --month 10 --dry-run
+```
+
+Because stages are cached, the real run afterwards reuses that work and finishes in
+under a minute.
+
+### Useful flags
+
+| Flag              | Why you would use it                                       |
+| ----------------- | ---------------------------------------------------------- |
+| `--dry-run`       | stages 1-3 for real, stage 4 preview only                  |
+| `--delay N`       | seconds between site requests; minimum 8, default 10       |
+| `--allow-skips N` | tolerate N talks the loader drops; default 0 aborts on any |
+| `--force`         | override the already-indexed guards only                   |
+
+### Guard rails
+
+The script refuses rather than guesses. It will stop if the conference is earlier than
+2023-10 (those vectors use a different, incompatible id scheme), if the listing yields
+fewer than 30 talks (a half-published conference), if the loader drops any talk, if the
+conference is already in the index, or if it cannot find the production key.
+
+Before writing anything it records every chunk id it is about to upsert into
+`data/update/<year>-<month>/run.json`. If a run goes wrong, roll back by deleting
+exactly those ids — never by a `{year, month}` metadata filter, which would also delete
+vectors from an earlier good run.
+
+### Afterwards
+
+Check the new talks are live, then bump the year range shown on the site
+(`client/src/routes/+page.svelte`):
+
+```console
+curl -sG https://www.iloveconference.org/api/search --data-urlencode "q=<a question only the new talks answer>"
+```
 
 ## Developing
 
@@ -52,7 +111,7 @@ Activate the poetry virtual environment: `poetry shell`
 
 Periodically add the files you are working on to git and run `nox` to run all checks and tests as you develop.
 
-If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.10`, or `nox -s tests-3.10`
+If nox fails, you can run the individual checks and tests manually; e.g., `nox -s pre-commit`, `nox -s mypy-3.12`, or `nox -s tests-3.12`
 
 Run `nox` before creating a pull request to ensure that all checks pass.
 

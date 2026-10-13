@@ -6,6 +6,8 @@ from typing import Callable
 from typing import Generator
 from typing import NamedTuple
 from typing import Optional
+from typing import Sequence
+from typing import Union
 from typing import cast
 
 import numpy as np
@@ -13,51 +15,59 @@ from numpy.typing import NDArray
 from voyageai import get_embeddings as get_voyageai_embeddings  # type: ignore
 
 
+# What the embedders below actually return. mpnet and bge hand back numpy arrays;
+# the hosted APIs (openai, voyage, cohere) hand back plain lists of floats. Both are
+# fine for the np.dot the splitter does with them, and calling them all NDArray was a
+# cast-shaped lie that only showed up under the typeguard session. Do not "fix" this by
+# coercing the API results to float32 - np.dot would then run in float32 instead of
+# upcasting to float64, which can move a merge decision sitting near the 0.83 threshold
+# and re-chunk the corpus.
+Vector = Union[NDArray[np.float32], list[float]]
+
+
 def get_mpnet_embedder(
     mpnet: Any,
     batch_size: int = 8,
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+) -> Callable[[list[str]], Sequence[Vector]]:
     """Get mpnet embeddings for paragraphs."""
 
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+    def embed(paragraphs: list[str]) -> list[Vector]:
         embeds = []
         for ix in range(0, len(paragraphs), batch_size):
             ix_end = min(ix + batch_size, len(paragraphs))
             embeds.extend(mpnet.encode(paragraphs[ix:ix_end]))
-        return cast(list[NDArray[np.float32]], embeds)
+        return cast(list[Vector], embeds)
 
     return embed
 
 
-def get_openai_embedder(
-    openai: Any, engine: str = "text-embedding-ada-002"
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+def get_openai_embedder(client: Any, model: str = "text-embedding-ada-002") -> Callable[[list[str]], Sequence[Vector]]:
     """Get openai embeddings for paragraphs."""
 
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        res = openai.Embedding.create(input=paragraphs, engine=engine)
-        return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
+    def embed(paragraphs: list[str]) -> list[Vector]:
+        res = client.embeddings.create(input=paragraphs, model=model)
+        return cast(list[Vector], [record.embedding for record in res.data])
 
     return embed
 
 
 def get_cohere_embedder(
     cohere: Any,
-) -> Callable[[list[str]], list[NDArray[np.float32]]]:
+) -> Callable[[list[str]], Sequence[Vector]]:
     """Get cohere embeddings for paragraphs."""
 
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+    def embed(paragraphs: list[str]) -> list[Vector]:
         # TODO if we end up using cohere, cache embeddings because they're so expensive
         res = cohere.embed(texts=paragraphs, model="large", truncate="END")
-        return cast(list[NDArray[np.float32]], res.embeddings)
+        return cast(list[Vector], res.embeddings)
 
     return embed
 
 
-def get_voyageai_embedder() -> Callable[[list[str]], list[NDArray[np.float32]]]:
+def get_voyageai_embedder() -> Callable[[list[str]], Sequence[Vector]]:
     """Get voyageai embeddings for paragraphs."""
 
-    def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+    def embed(paragraphs: list[str]) -> list[Vector]:
         """Get Voyage AI embeddings for paragraphs."""
         embeds = []
         # batch size is 8

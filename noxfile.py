@@ -23,7 +23,14 @@ except ImportError:
 
 
 package = "models"
-python_versions = ["3.10"]
+python_versions = ["3.12"]
+
+# torch is locked to the +cpu local build from PyTorch's own index. That source is
+# declared "explicit" in pyproject.toml, so `poetry export` - which is how nox-poetry
+# builds its constraints file - does not emit the index url, and pip then cannot find
+# torch==<version>+cpu on PyPI. Point pip at the index so the constrained install
+# resolves. setdefault so an operator's own PIP_EXTRA_INDEX_URL still wins.
+os.environ.setdefault("PIP_EXTRA_INDEX_URL", "https://download.pytorch.org/whl/cpu")
 nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = [
     "pre-commit",
@@ -158,6 +165,7 @@ def tests(session: Session) -> None:
     """Run the test suite."""
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
+    session.run("python", "-m", "spacy", "download", "en_core_web_sm")
     try:
         session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
     finally:
@@ -183,6 +191,7 @@ def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
+    session.run("python", "-m", "spacy", "download", "en_core_web_sm")
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 
