@@ -194,7 +194,7 @@ def predict_using_features_and_greedy_embeddings(  # noqa: C901
         embeddings = embedder(paragraph_group_texts)
         # finally merge paragraph groups greedily based on embeddings as long as max_chars is not exceeded
         pair_scores = [np.dot(embeddings[ix], embeddings[ix + 1]) for ix in range(len(paragraph_groups) - 1)]
-        paragraph_group_assignments = [ix for ix in range(len(paragraph_groups))]
+        paragraph_group_assignments = [*range(len(paragraph_groups))]
         sorted_pair_scores = sorted(enumerate(pair_scores), key=lambda x: x[1], reverse=True)
         for ix, score in sorted_pair_scores:
             if score < threshold:
