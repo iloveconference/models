@@ -32,11 +32,29 @@ Install spacy model: `poetry run python -m spacy download en_core_web_sm`
 Create a `.env` file with the following variables:
 
 ```console
-OPENAI_KEY=your_openai_api_key (found on API keys page)
+OPENAI_API_KEY=your_openai_api_key (found on API keys page)
 OPENAI_ORG=your_openai_org (found on Settings page)
-PINECONE_KEY=your_pinecone_api_key (found on API keys page)
-PINECONE_ENV=your_pinecone_environment_name (found on API keys page)
+VOYAGE_API_KEY=your_voyageai_api_key (the splitter embeds paragraphs with voyage-01)
+PINECONE_API_KEY=your_DEVELOPMENT_pinecone_api_key
 ```
+
+These are the names the code actually reads. `VOYAGE_API_KEY` is required: without
+it the splitter cannot run, and seven of the reproducibility tests skip silently
+rather than fail.
+
+`PINECONE_API_KEY` here is for a **development** project only. The production key is
+never read from this file — `update_conference.py` takes it from `$PINECONE_PROD_KEY`
+or from `../server/.env`, and aborts if it finds neither.
+
+## Downloading data
+
+The notebooks read from a `data/` directory that is not in git:
+
+```console
+aws s3 sync s3://iloveconference.data data
+```
+
+(An older README pointed at `s3://scripturecentralqa.data`, which no longer exists.)
 
 ## Adding a new conference
 
@@ -99,7 +117,7 @@ vectors from an earlier good run.
 ### Afterwards
 
 Check the new talks are live, then bump the year range shown on the site
-(`client/src/routes/+page.svelte`):
+(`client/src/lib/coverage.ts`):
 
 ```console
 curl -sG https://www.iloveconference.org/api/search --data-urlencode "q=<a question only the new talks answer>"
@@ -107,7 +125,8 @@ curl -sG https://www.iloveconference.org/api/search --data-urlencode "q=<a quest
 
 ## Developing
 
-Activate the poetry virtual environment: `poetry shell`
+Activate the poetry virtual environment: `eval $(poetry env activate)`
+(`poetry shell` was removed in Poetry 2)
 
 Periodically add the files you are working on to git and run `nox` to run all checks and tests as you develop.
 
@@ -117,7 +136,7 @@ Run `nox` before creating a pull request to ensure that all checks pass.
 
 ### Running notebooks
 
-After running `poetry shell`, you need to install the poetry virtual environment as a jupyter kernel.
+After activating the environment, you need to install the poetry virtual environment as a jupyter kernel.
 
 Let's name it "models": `python -m ipykernel install --user --name models`
 You only need to do this once.

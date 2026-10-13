@@ -1,16 +1,13 @@
 """Utility functions for loading and saving data."""
 
 import json
-import os
 import re
 from typing import Any
-from typing import Callable
 from typing import Iterable
 from typing import cast
 
 from bs4 import Tag
 from markdownify import MarkdownConverter  # type: ignore
-from tqdm import tqdm
 
 from models.document import Document
 
@@ -58,28 +55,3 @@ def load_docs_from_jsonl(file_path: str) -> Iterable[Document]:
             obj = Document(**data)
             array.append(obj)
     return array
-
-
-class Loader:
-    """Create Documents for all files in a directory."""
-
-    def __init__(self, load_fn: Callable[[str, str, str], Document], path: str = "", bs_parser: str = "html.parser"):
-        """Initialize loader."""
-        self.load_fn = load_fn
-        self.path = path
-        self.bs_parser = bs_parser
-
-    def load(self, verbose: bool = False) -> list[Document]:
-        """Load documents from path."""
-        docs = []
-        for filename in tqdm(os.listdir(self.path), disable=not verbose):
-            path = os.path.join(self.path, filename)
-            with open(path, encoding="utf8") as f:
-                data = json.load(f)
-            doc = self.load_fn(data["url"], data["html"], self.bs_parser)
-            if not doc.metadata["title"] or not doc.page_content:
-                if verbose:
-                    print("Missing title or content - skipping", data["url"])
-                continue
-            docs.append(doc)
-        return docs
