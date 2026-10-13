@@ -2,12 +2,13 @@
 
 from typing import Iterator
 from typing import NamedTuple
+from typing import Sequence
 
 import numpy as np
 import pandas as pd  # type: ignore
-from numpy.typing import NDArray
 
 from models import split_model_train
+from models.split_utils import Vector
 
 
 def test_predict_using_pairs() -> None:
@@ -37,7 +38,7 @@ def test_predict_using_pairs() -> None:
 def test_predict_using_embeddings() -> None:
     """It predicts the splits for each paragraph using the paragraph embeddings."""
 
-    def dummy_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+    def dummy_embedder(paragraphs: list[str]) -> Sequence[Vector]:
         embeddings = [
             np.array([0.5, 0.5], dtype=np.float32),
             np.array([0.7, 0.3], dtype=np.float32),
@@ -198,7 +199,7 @@ def test_group_paragraphs_using_syntactic_features() -> None:
 def test_predict_using_features_and_embeddings() -> None:
     """It predicts the splits for each paragraph using the syntactic features followed by embeddings."""
 
-    def dummy_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+    def dummy_embedder(paragraphs: list[str]) -> Sequence[Vector]:
         embeddings = [
             np.array([0.5, 0.5], dtype=np.float32),
             np.array([0.6, 0.4], dtype=np.float32),
@@ -239,7 +240,7 @@ def test_predict_using_features_and_embeddings() -> None:
 def test_predict_using_features_and_greedy_embeddings() -> None:
     """It predicts the splits for each paragraph using the syntactic features followed by greedy embeddings."""
 
-    def dummy_embedder(paragraphs: list[str]) -> list[NDArray[np.float32]]:
+    def dummy_embedder(paragraphs: list[str]) -> Sequence[Vector]:
         embeddings = [
             np.array([0.5, 0.5], dtype=np.float32),
             np.array([0.6, 0.4], dtype=np.float32),
@@ -298,7 +299,7 @@ def _dummy_parser(text: str) -> _Doc:
 def test_predict_using_features_and_ensemble() -> None:
     """It predicts the splits for each paragraph using the syntactic features followed by embeddings."""
 
-    def dummy_embedder(texts: list[str]) -> list[NDArray[np.float32]]:
+    def dummy_embedder(texts: list[str]) -> Sequence[Vector]:
         return [
             np.array([0.7, 0.7], dtype=np.float32),
             np.array([0.7, 0.7], dtype=np.float32),
@@ -380,7 +381,7 @@ def test_get_pair_features() -> None:
 def test_get_labeled_pairs() -> None:
     """It returns the labeled pairs of paragraphs."""
 
-    def dummy_embedder(texts: list[str]) -> list[NDArray[np.float32]]:
+    def dummy_embedder(texts: list[str]) -> Sequence[Vector]:
         return [np.array([0.1, 0.2, 0.3], dtype=np.float32) for _ in texts]
 
     talk_sections = [

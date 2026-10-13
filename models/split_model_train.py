@@ -3,13 +3,14 @@ import re
 from typing import Any
 from typing import Callable
 from typing import Optional
+from typing import Sequence
 from typing import cast
 
 import numpy as np
 import pandas as pd  # type: ignore
-from numpy.typing import NDArray
 from tqdm import tqdm
 
+from models.split_utils import Vector
 from models.split_utils import clean_text
 
 
@@ -41,7 +42,7 @@ def predict_using_pairs(pair_scorer: Callable[[str, str], float], threshold: flo
 
 
 def predict_using_embeddings(
-    embedder: Callable[[list[str]], list[NDArray[np.float32]]], threshold: float
+    embedder: Callable[[list[str]], Sequence[Vector]], threshold: float
 ) -> Callable[[list[str]], list[int]]:
     """Predict splits using embeddings."""
 
@@ -139,7 +140,7 @@ def group_paragraphs_using_syntactic_features(
 
 def predict_using_features_and_embeddings(
     syntactic_feature_generator: Callable[[str], dict[str, int]],
-    embedder: Callable[[list[str]], list[NDArray[np.float32]]],
+    embedder: Callable[[list[str]], Sequence[Vector]],
     threshold: float,
 ) -> Callable[[list[str]], list[int]]:
     """Predict splits using syntactic features followed by embeddings."""
@@ -164,7 +165,7 @@ def predict_using_features_and_embeddings(
 
 def predict_using_features_and_greedy_embeddings(  # noqa: C901
     syntactic_feature_generator: Callable[[str], dict[str, int]],
-    embedder: Callable[[list[str]], list[NDArray[np.float32]]],
+    embedder: Callable[[list[str]], Sequence[Vector]],
     threshold: float,
     max_chars: int = 2000,
 ) -> Callable[[list[str]], list[int]]:
@@ -218,8 +219,8 @@ def predict_using_features_and_greedy_embeddings(  # noqa: C901
 
 def predict_using_features_and_ensemble(
     syntactic_feature_generator: Callable[[str], dict[str, int]],
-    openai_embedder: Callable[[list[str]], list[NDArray[np.float32]]],
-    mpnet_embedder: Callable[[list[str]], list[NDArray[np.float32]]],
+    openai_embedder: Callable[[list[str]], Sequence[Vector]],
+    mpnet_embedder: Callable[[list[str]], Sequence[Vector]],
     parser: Any,
     clf: Any,
     threshold: float,
@@ -271,8 +272,8 @@ def get_text_features(prefix: str, text: str, parser: Any) -> dict[str, float]:
 def get_pair_features(
     prev_ix: int,
     curr_ix: int,
-    openai_embeds: list[NDArray[np.float32]],
-    mpnet_embeds: list[NDArray[np.float32]],
+    openai_embeds: Sequence[Vector],
+    mpnet_embeds: Sequence[Vector],
     parser: Any,
     texts: list[str],
 ) -> dict[str, float]:
@@ -289,8 +290,8 @@ def get_pair_features(
 
 def get_labeled_pairs(
     talk_sections: list[dict[str, Any]],
-    openai_embedder: Callable[[list[str]], list[NDArray[np.float32]]],
-    mpnet_embedder: Callable[[list[str]], list[NDArray[np.float32]]],
+    openai_embedder: Callable[[list[str]], Sequence[Vector]],
+    mpnet_embedder: Callable[[list[str]], Sequence[Vector]],
     parser: Any,
     syntactic_feature_generator: Callable[[str], dict[str, int]],
 ) -> list[dict[str, Any]]:

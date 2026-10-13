@@ -36,6 +36,19 @@ CHUNKS_PER_TALK = 4
 # --- pure helpers -----------------------------------------------------------------------
 
 
+def _month_callback_args() -> tuple[click.Context, click.Parameter]:
+    """Build the ctx and param click would pass to the --month callback.
+
+    Passing None for both would be simpler, but the typeguard session checks
+    annotations at runtime and rejects it.
+
+    Returns:
+        A context and the --month parameter, as click itself would supply them.
+    """
+    command = click.Command("update-conference")
+    return click.Context(command), click.Option(["--month"])
+
+
 @pytest.mark.parametrize(("given", "expected"), [("4", "04"), ("04", "04"), ("10", "10"), (" 10 ", "10")])
 def test_normalize_month_pads(given: str, expected: str) -> None:
     """It accepts an unpadded month and zero-pads it.
@@ -44,7 +57,8 @@ def test_normalize_month_pads(given: str, expected: str) -> None:
         given: the raw option value.
         expected: the normalized month.
     """
-    assert uc._normalize_month(None, None, given) == expected  # type: ignore[arg-type]
+    ctx, param = _month_callback_args()
+    assert uc._normalize_month(ctx, param, given) == expected
 
 
 @pytest.mark.parametrize("given", ["7", "01", "", "oct", "100"])
@@ -54,8 +68,10 @@ def test_normalize_month_rejects_non_conference_months(given: str) -> None:
     Args:
         given: the raw option value.
     """
+    ctx, param = _month_callback_args()
+
     with pytest.raises(click.BadParameter, match="must be 04 or 10"):
-        uc._normalize_month(None, None, given)  # type: ignore[arg-type]
+        uc._normalize_month(ctx, param, given)
 
 
 def test_is_talk_url_accepts_a_real_talk() -> None:

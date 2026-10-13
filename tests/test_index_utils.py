@@ -1,7 +1,6 @@
 """Test cases for the index_utils module."""
 
 from typing import Any
-from typing import cast
 
 import pytest
 from openai import OpenAI
@@ -59,14 +58,28 @@ class _FakeClient:
 
 
 def _embedder(client: _FakeClient, model: str = index_utils.EMBEDDING_MODEL) -> index_utils.OpenAIEmbedder:
-    """Build an OpenAIEmbedder over a fake client."""
-    return index_utils.OpenAIEmbedder(model=model, client=cast(OpenAI, client))
+    """Build an OpenAIEmbedder whose embeddings resource is the recording fake.
+
+    A real OpenAI client is constructed - it makes no network call on construction -
+    and only its embeddings resource is swapped. Casting a fake to OpenAI instead would
+    pass mypy but fail the typeguard session, which checks annotations at runtime.
+
+    Args:
+        client: the recording fake whose embeddings resource should be used.
+        model: the embedding model to build the embedder with.
+
+    Returns:
+        An embedder that records its calls on the given fake.
+    """
+    real = OpenAI(api_key="test-key-never-used")
+    real.embeddings = client.embeddings  # type: ignore[misc,assignment]
+    return index_utils.OpenAIEmbedder(model=model, client=real)
 
 
 def test_embedding_model_is_ada_002() -> None:
     """The production index is ada-002, so the default must not drift."""
     assert index_utils.EMBEDDING_MODEL == "text-embedding-ada-002"
-    assert index_utils.OpenAIEmbedder(client=cast(OpenAI, _FakeClient())).model == "text-embedding-ada-002"
+    assert index_utils.OpenAIEmbedder(client=_embedder(_FakeClient()).client).model == "text-embedding-ada-002"
 
 
 def test_embed_documents_sends_one_request_and_sorts_by_index() -> None:
