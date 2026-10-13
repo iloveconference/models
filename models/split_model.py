@@ -5,13 +5,12 @@ import pickle
 from typing import Any
 from typing import Sequence
 
-import openai
 import spacy
-from langchain.schema.document import BaseDocumentTransformer
-from langchain.schema.document import Document
+from openai import OpenAI
 from sentence_transformers import SentenceTransformer  # type: ignore
 from tqdm.autonotebook import tqdm
 
+from models.document import Document
 from models.split_model_train import predict_using_features_and_ensemble
 from models.split_model_train import predict_using_features_and_greedy_embeddings
 from models.split_model_train import syntactic_paragraph_features
@@ -49,7 +48,7 @@ def split_document_content(
     return docs
 
 
-class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
+class SyntacticEmbeddingSplitter:
     """Split documents recursively, then join them based upon syntax and embedding similarity."""
 
     def __init__(
@@ -58,11 +57,8 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
         split_threshold: float = 0.83,
         max_chars: int = 2000,
         anchor: str = "anchor",
-        **kwargs: Any
     ):
         """Initialize."""
-        super().__init__(**kwargs)
-
         self.max_chars = max_chars
         self.anchor = anchor
         # init spacy
@@ -93,10 +89,6 @@ class SyntacticEmbeddingSplitter(BaseDocumentTransformer):
             )
         return transformed_docs
 
-    async def atransform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
-        """Transform documents asynchronously."""
-        raise NotImplementedError
-
     def split_documents(self, documents: Sequence[Document], verbose: bool = False) -> list[Document]:
         """Split documents using model."""
         return list(self.transform_documents(documents, verbose=verbose))
@@ -111,10 +103,9 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
         split_threshold: float = 0.83,
         max_chars: int = 2000,
         anchor: str = "anchor",
-        **kwargs: Any
     ):
         """Initialize by calling SyntacticEmbeddingSplitter."""
-        super().__init__(embedder, split_threshold, max_chars, anchor, **kwargs)
+        super().__init__(embedder, split_threshold, max_chars, anchor)
 
     def transform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
         """Transform documents by splitting them into sections and then splitting each section."""
@@ -137,7 +128,7 @@ class MarkdownSyntacticEmbeddingSplitter(SyntacticEmbeddingSplitter):
         return transformed_docs
 
 
-class ModelTextSplitter(BaseDocumentTransformer):
+class ModelTextSplitter:
     """Split documents using upon a trained model."""
 
     def __init__(
@@ -146,11 +137,8 @@ class ModelTextSplitter(BaseDocumentTransformer):
         split_threshold: float = 0.55,
         chunk_size: int = 500,
         anchor: str = "anchor",
-        **kwargs: Any
     ):
         """Initialize splitter with model."""
-        super(BaseDocumentTransformer, self).__init__(**kwargs)
-
         self.chunk_size = chunk_size
         self.anchor = anchor
 
@@ -166,8 +154,7 @@ class ModelTextSplitter(BaseDocumentTransformer):
         mpnet_embedder = get_mpnet_embedder(mpnet)
 
         # openai embedder for splitter
-        openai.api_key = os.environ["OPENAI_API_KEY"]
-        openai_embedder = get_openai_embedder(openai)
+        openai_embedder = get_openai_embedder(OpenAI(api_key=os.environ["OPENAI_API_KEY"]))
 
         self.predictor = predict_using_features_and_ensemble(
             syntactic_paragraph_features,
@@ -204,10 +191,6 @@ class ModelTextSplitter(BaseDocumentTransformer):
                     metadata = doc.metadata
                 transformed.append(Document(metadata=metadata, page_content=split_text_and_id[0]))
         return transformed
-
-    async def atransform_documents(self, documents: Sequence[Document], **kwargs: Any) -> Sequence[Document]:
-        """Transform documents asynchronously."""
-        raise NotImplementedError
 
     def split_documents(self, documents: Sequence[Document], verbose: bool = False) -> list[Document]:
         """Split documents using model."""

@@ -1,0 +1,191 @@
+{
+  "2023-10-12wright.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2023/10/12wright?lang=eng",
+    "title": "Abide the Day in Christ",
+    "chunk_count": 8,
+    "chunk_ids": [
+      "85aea08dd48c6f169f0c80fc70320b7b64527645deff2df553304209de052e9e",
+      "686e314db0f2b52b30036623049413b09ee9bb094ae1aea88ddd92c73150616a",
+      "9aad77bb23dadbb3af1b2a3c6bc5c650e6fd5beea04c8e8593da080a9e196f75",
+      "1d8e76fc0bd602bb101bf82a38ee48e6eb5863031356a39d2abd7fcee79c3511",
+      "2338153fe24e7ae3f2219de5aee83a47d066e04cc0332eaee63ddce93dd0f4b2",
+      "1fe2ec487eeceb1c93936c70a0ddfa661c7d540fc0a23d968af68f7880502087",
+      "c017514404c4f2763c2e0f734fa71411dfa18789d7731016c07b0473a69ce78c",
+      "ff1e8a00f9fe494779495626b95c420f10189eabadefbe9ca24daf442af3a2f1"
+    ],
+    "anchors": ["p1", "p16", "p17", "p22", "p25", "p26", "p27", "p42"],
+    "chunk_lengths": [1822, 166, 1666, 436, 412, 406, 1115, 1571],
+    "verified_against_index": true
+  },
+  "2023-10-25stevenson.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2023/10/25stevenson?lang=eng",
+    "title": "Promptings of the Spirit",
+    "chunk_count": 10,
+    "chunk_ids": [
+      "0d4a4d44febe584d7c9a24a25b60901e56f47c1b27d446cd0cf780d2c4149528",
+      "ae62e59f0d709307b0d80ff567f25d2a1822f5a4cb454b221cc51760f598448f",
+      "1ba412efdcfe10b990a0f54a40f90e6523dfaa24d984eb2998d9fd8f333cd9de",
+      "4463ec5b72f10ce4e07545b32eb1e03ab473470ebf622a8418bb4ca2effd7ec1",
+      "1acf12cb39ff7a5f4cd47960fe344304b1805830459011644fd586c6a997e517",
+      "342e634849bc4134371a3c6f5e0563194dce3c6d62e0f7d8e040425222d5e493",
+      "44885991e0af261386ec7beb00d553b46c326350e17d4629db722fa7a6555398",
+      "8bfc870a0b9e9934828f685d3a85529fe62c41051387001b4eb26f664838bd79",
+      "5795a4cdde66ad9d956f86456d19ef7a4f47e7fe71328233e80414b76400dddf",
+      "f6d3aba77373f6cd7ebf337982f386254b6048dc14bd464893943778015c5d4d"
+    ],
+    "anchors": [
+      "p1",
+      "p3",
+      "p5",
+      "p9",
+      "p11",
+      "p14",
+      "p17",
+      "p20",
+      "p23",
+      "p30"
+    ],
+    "chunk_lengths": [759, 1029, 1183, 558, 1325, 1417, 717, 1151, 1566, 1887],
+    "verified_against_index": true
+  },
+  "2023-10-31sabin.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2023/10/31sabin?lang=eng",
+    "title": "Hallmarks of Happiness",
+    "chunk_count": 15,
+    "chunk_ids": [
+      "460a4d472b536c5051287d340198c5e1af9239cce6f6deb797c7074dbb2bcaa3",
+      "eec7a0ac8a5952f8e9bef064134f16cbd259acd3c00295eca2f22088a288c8b1",
+      "76c0ae26a7b6927efb207f024b86dda7f7bae59f6e97f51264845cddf4930974",
+      "d156c2042285e622e475e71fa721340d99948a950c7b24ff95e2c8841cb75fc7",
+      "cf6d1c81c54c9787aea504efb1c8d49b9d1514b3c6abb08e2dc25344f0393bcf",
+      "937934a0b450ba701e0749514611b91d753975bf7378fd4a983bdd6f42ff354e",
+      "7625daac6cc3b936882385573bd10e0ee5d45b224cae628cb710c396dd4bded1",
+      "9ce27c6f09946f5e36b72307b98f2780584f3880a26ca0f3067ca0c4e6647301",
+      "63ef3e8f8497efa8c652b566b9f534c20dc4ad90fe8b4284be573754b67f9439",
+      "bce430e2284be8d8f89bbdfb74a47bc429b6afe330ecb0c98ba4d8cbfa3c54e6",
+      "f4fc848049112edb53291923041d1c8019d56d166dca65e09ff8ea3219f7439f",
+      "c87230e94b64dc18a487c0c12c50e8695e934e5e6f3fa0724ea8d7ea66870495",
+      "83d896b789a1a931ff70eeaacc0cc1152a524b5c8753cb708e8672f121080e4b",
+      "8d7633ae9544f7c9ea8ffe525019cdd95315a9489c71dd44b4140abfd5269aa5",
+      "a8e0851d5b33c07ba04383fb7261fcaae53d19e5d9394c1d2c6da04cfa1f393b"
+    ],
+    "anchors": [
+      "p1",
+      "p3",
+      "p6",
+      "p8",
+      "p11",
+      "p13",
+      "p14",
+      "p39",
+      "p16",
+      "p17",
+      "p18",
+      "p19",
+      "p22",
+      "p25",
+      "p30"
+    ],
+    "chunk_lengths": [
+      1088, 634, 1121, 882, 957, 360, 286, 283, 741, 192, 463, 524, 1239, 1231,
+      1271
+    ],
+    "verified_against_index": true
+  },
+  "2024-04-11oaks.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2024/04/11oaks?lang=eng",
+    "title": "Sustaining of General Authorities, Area Seventies, and General Officers",
+    "chunk_count": 11,
+    "chunk_ids": [
+      "b382f53a18e66ad424f3aca3fc4666373c12cf83ed6c41b8b3680c16334a5a11",
+      "e632dc86d3b50665b175a44f84840c702f8bab4f0b6d19d1a2e77a2d2a4fbdc0",
+      "f03d0840f1380ea8522302c78c461b672db5b14d08ee37ad656f865c85a07389",
+      "199e9f2551dc44d618f227d212ea6ff7b6480c056d3e85b850c7effc698e8d23",
+      "d129ea3dc183aadda888c3785b933e1008fdfbc1f62f759882cb764156b6a24f",
+      "46e4871feb4681903bc712cb2c89ca653329360be98fe5a730cb66dae41fe716",
+      "3457792f2662e35718b5b0f6f67a2ee9d98439994a181fe858f1cfefa8760b84",
+      "1768a38d59b744f55c057d2bcc9dfb577af6f32b97e94d0a55ca2aaa1a95bfc1",
+      "7183837c0c9217dfc2f834903df8249fb9260ea1ce6320cd918ca8c60ea68747",
+      "8599552bbae65894c25244d3834a86dfda623b237a5394b5e43e4a99688c4986",
+      "30aac8543998e7a8ce1f86d1f4bb763860c245126eeb7791734555931edae6ac"
+    ],
+    "anchors": [
+      "p1",
+      "p15",
+      "p21",
+      "p22",
+      "p23",
+      "p48",
+      "p36",
+      "p42",
+      "p43",
+      "p44",
+      "p45"
+    ],
+    "chunk_lengths": [1518, 934, 201, 108, 1276, 150, 308, 141, 1115, 78, 1032],
+    "verified_against_index": true
+  },
+  "2024-04-12larson.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2024/04/12larson?lang=eng",
+    "title": "Church Auditing Department Report, 2023",
+    "chunk_count": 1,
+    "chunk_ids": [
+      "f12cfed6f7543a4a924e70c85f2d53e844666bc3c1032d9c13289809afc756ce"
+    ],
+    "anchors": ["p2"],
+    "chunk_lengths": [1198],
+    "verified_against_index": true
+  },
+  "2024-04-15dushku.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2024/04/15dushku?lang=eng",
+    "title": "Pillars and Rays",
+    "chunk_count": 5,
+    "chunk_ids": [
+      "3b92f5d44ce058810f79e8ce1a25d91e6c4d3b4f1f1dc37b75e04cddcf5a5db6",
+      "847ceb4cfa42c871481d33ee14a82bde4937644a26a5c8f165c7696c98ce8041",
+      "1c71ce600c6ad3c642ec28ff57209f0fb6a3d1ec3edb7f937b85197c114a53b2",
+      "b9e86b47724079765fc0bd160b142a0c7f97f0b3d1a421bc382900e073ab9b23",
+      "fa00fbcf812cd6abe3827243c156e3bbc5c8d20766eda8f4e62b0135944363df"
+    ],
+    "anchors": ["p1", "p7", "p14", "p25", "p31"],
+    "chunk_lengths": [1998, 1777, 1827, 1426, 1805],
+    "verified_against_index": true
+  },
+  "2024-10-18oaks.json": {
+    "url": "https://www.churchofjesuschrist.org/study/general-conference/2024/10/18oaks?lang=eng",
+    "title": "Following Christ",
+    "chunk_count": 12,
+    "chunk_ids": [
+      "7be1e650198bf0105c04e869381838b9d75dd05ba0b688bcb88524c7b15c103c",
+      "4b964e205e4174ac9d6cff8852cf3bb261fa62374485862a493e3e31ffb87701",
+      "47569468021d8069b509c083016f7739263e7aa5f74d93fa62c651f8dd495000",
+      "46bd62bbfe2ffe9fc3444c7b964b3c56822b2ee9f8f3c17d180462b0e9622cad",
+      "039d2630356d7e9f736c9949b3dfe8d028226ad838281cacb0e95245c4cb0b77",
+      "94ea4f39269907e15764e9645df2c50f0be8c31c690d19de1f549e6970b22c0e",
+      "9210c3e6291a7ca8e9567849e17dd1da929b10db376607f7fe70f81be777bd9b",
+      "d3d05d1f5ffe7000770e338fdaff7993cbf9acd46ce7b6f3d9daa7c9e0714026",
+      "6e5e9343c73a352a71ebd17b2eae7055507aff57da8d4595e2af858900c34e5e",
+      "fdce26e57b8106aa455c4888f84efcdd7cc2413d61409bc8329bc3547cc00d1d",
+      "e0d9bc134b332a82868d29146662c9c24ae308280064db2b6814ba4ffa811e4f",
+      "4a5b7d870c6871c88d45f5143da6961bc0671bdc27fc7c35d1f7f2599785982e"
+    ],
+    "anchors": [
+      "p_fjpqh",
+      "p_xXNVy",
+      "p_rGHnb",
+      "p_byEkx",
+      "p_kNe0k",
+      "p_ezU20",
+      "p_z4qxi",
+      "p_alS9T",
+      "p_czRKW",
+      "p_lG7rS",
+      "p_osrGu",
+      "p_cmUiR"
+    ],
+    "chunk_lengths": [
+      504, 391, 1496, 1625, 103, 419, 1890, 543, 101, 580, 382, 509
+    ],
+    "verified_against_index": true
+  }
+}

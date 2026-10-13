@@ -23,7 +23,7 @@ except ImportError:
 
 
 package = "models"
-python_versions = ["3.10"]
+python_versions = ["3.12"]
 nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = (
     "pre-commit",
@@ -158,6 +158,7 @@ def tests(session: Session) -> None:
     """Run the test suite."""
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
+    session.run("python", "-m", "spacy", "download", "en_core_web_sm")
     try:
         session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
     finally:
@@ -183,6 +184,7 @@ def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
+    session.run("python", "-m", "spacy", "download", "en_core_web_sm")
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 

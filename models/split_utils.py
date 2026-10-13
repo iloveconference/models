@@ -30,13 +30,13 @@ def get_mpnet_embedder(
 
 
 def get_openai_embedder(
-    openai: Any, engine: str = "text-embedding-ada-002"
+    client: Any, model: str = "text-embedding-ada-002"
 ) -> Callable[[list[str]], list[NDArray[np.float32]]]:
     """Get openai embeddings for paragraphs."""
 
     def embed(paragraphs: list[str]) -> list[NDArray[np.float32]]:
-        res = openai.Embedding.create(input=paragraphs, engine=engine)
-        return cast(list[NDArray[np.float32]], [record["embedding"] for record in res["data"]])
+        res = client.embeddings.create(input=paragraphs, model=model)
+        return cast(list[NDArray[np.float32]], [record.embedding for record in res.data])
 
     return embed
 

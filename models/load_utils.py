@@ -6,14 +6,13 @@ import re
 from typing import Any
 from typing import Callable
 from typing import Iterable
-from typing import Iterator
 from typing import cast
 
 from bs4 import Tag
-from langchain.document_loaders.base import BaseLoader
-from langchain.schema.document import Document
 from markdownify import MarkdownConverter  # type: ignore
 from tqdm import tqdm
+
+from models.document import Document
 
 
 def clean(text: Any) -> str:
@@ -61,16 +60,11 @@ def load_docs_from_jsonl(file_path: str) -> Iterable[Document]:
     return array
 
 
-class Loader(BaseLoader):
+class Loader:
     """Create Documents for all files in a directory."""
-
-    def lazy_load(self) -> Iterator[Document]:
-        """A lazy loader for Documents."""
-        raise NotImplementedError(f"{self.__class__.__name__} does not implement lazy_load()")
 
     def __init__(self, load_fn: Callable[[str, str, str], Document], path: str = "", bs_parser: str = "html.parser"):
         """Initialize loader."""
-        super().__init__()
         self.load_fn = load_fn
         self.path = path
         self.bs_parser = bs_parser
