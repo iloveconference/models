@@ -25,7 +25,7 @@ except ImportError:
 package = "models"
 python_versions = ["3.10"]
 nox.needs_version = ">= 2021.6.6"
-nox.options.sessions = (
+nox.options.sessions = [
     "pre-commit",
     "safety",
     "mypy",
@@ -33,7 +33,7 @@ nox.options.sessions = (
     "typeguard",
     # "xdoctest",
     "docs-build",
-)
+]
 
 
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
