@@ -29,6 +29,10 @@ torch = {version = "^2.1.0", source = "pytorch-cpu"}
 cohere = "^4.1.1"
 sentence-transformers = "^2.2.2"
 spacy = "^3.7.2"
+# Pinned by url: the splitter's sentence boundaries come from this exact model, so an
+# unpinned `spacy download` could re-chunk the corpus with no code change at all.
+# Bumping it is a deliberate re-chunk decision - see tests/test_reproducibility.py.
+en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl"}
 matplotlib = "^3.7.1"
 types-tqdm = "^4.65.0.1"
 markdownify = "^0.11.6"
