@@ -2217,7 +2217,9 @@ class _ResumableIndex:
                 "\n"
                 f"{position} batch(es) already landed in production. The run record has\n"
                 "stages.upsert.batches_done and planned_upsert.batches; re-run to resume\n"
-                "from the first unsent batch. Do not roll back by metadata filter.",
+                "from the first unsent batch. A {year,month} filter delete is also safe\n"
+                "here: the already-indexed guard proved this conference was empty before\n"
+                "the run, so the filter matches only what this run wrote.",
             ) from error
         self.upserted_count += int(getattr(response, "upserted_count", len(batch)) or 0)
         self.sent += len(batch)
@@ -2381,8 +2383,11 @@ def print_summary(ctx: Ctx, manifest: dict[str, Any], stats: dict[str, Any]) -> 
     )
     _echo(f"  run record: {ctx.run.path}")
     _echo(
-        f"  rollback:   delete the {manifest['chunk_count']} ids in planned_upsert.chunk_ids "
-        "(never by {year,month} filter)"
+        f"  rollback:   delete the {manifest['chunk_count']} ids in planned_upsert.chunk_ids, "
+        "or just the {year,month} filter -\n"
+        "              this run indexed the whole conference into an empty slot, so the\n"
+        "              filter matches exactly these vectors. The id list is only required\n"
+        "              after a --force run over a conference that already had vectors."
     )
     _echo("  next: confirm the new talks answer a question only they can, then bump")
     _echo("        LATEST_CONFERENCE_YEAR in client/src/lib/coverage.ts (see README)")

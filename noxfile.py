@@ -25,11 +25,14 @@ except ImportError:
 package = "models"
 python_versions = ["3.12"]
 
-# torch is locked to the +cpu local build from PyTorch's own index. That source is
-# declared "explicit" in pyproject.toml, so `poetry export` - which is how nox-poetry
-# builds its constraints file - does not emit the index url, and pip then cannot find
-# torch==<version>+cpu on PyPI. Point pip at the index so the constrained install
-# resolves. setdefault so an operator's own PIP_EXTRA_INDEX_URL still wins.
+# torch is locked to the +cpu local build from PyTorch's own index. `poetry export`
+# does emit `--extra-index-url` for that source, but nox-poetry drops it: its
+# to_constraint() returns None for every line starting with "-" when it builds the
+# constraints file, leaving pip unable to find torch==<version>+cpu on PyPI. So point
+# pip at the index directly. Do NOT "fix" this by changing the source priority away
+# from "explicit" - that would not restore the line (nox-poetry still strips it) and
+# would widen the pool to every project the pytorch index serves.
+# setdefault so an operator's own PIP_EXTRA_INDEX_URL still wins.
 os.environ.setdefault("PIP_EXTRA_INDEX_URL", "https://download.pytorch.org/whl/cpu")
 nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = [

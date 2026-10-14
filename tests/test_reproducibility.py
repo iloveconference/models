@@ -8,6 +8,20 @@ It is deliberately hermetic apart from the embedding calls: the talk html is rea
 tests/fixtures/talks, never crawled, and Pinecone is never queried. A talk the website
 revises, or an index someone re-builds, must not be able to turn this test red - only
 a change in our own code may do that.
+
+How expected_chunks.json was produced, and why you must not regenerate it:
+each entry was captured by running load -> split over the committed fixture html and
+then confirming, against the live production index, that every regenerated chunk id
+was already present on that talk's url. "verified_against_index" records that check.
+
+That flag lives inside the file this test reads, so it certifies nothing on its own.
+Regenerating the file from whatever the code currently produces would turn any red
+gate green while silently re-baselining the thing being guarded - and the diff would
+look like a routine fixture update.
+
+So: a red gate means the pipeline changed. Find out why. The only legitimate reason to
+regenerate these expectations is a deliberate, reviewed decision to re-chunk the whole
+corpus, which also means re-indexing all ~36,000 vectors.
 """
 
 import inspect
