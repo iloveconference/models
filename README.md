@@ -27,8 +27,6 @@ Install nox: `poetry run pipx install nox && poetry run pipx inject nox nox-poet
 
 Install pre-commit as a git hook: `poetry run pre-commit install`
 
-Install spacy model: `poetry run python -m spacy download en_core_web_sm`
-
 Create a `.env` file with the following variables:
 
 ```console
@@ -113,6 +111,32 @@ Before writing anything it records every chunk id it is about to upsert into
 `data/update/<year>-<month>/run.json`. If a run goes wrong, roll back by deleting
 exactly those ids — never by a `{year, month}` metadata filter, which would also delete
 vectors from an earlier good run.
+
+### If voyage-01 ever goes away
+
+The splitter embeds paragraph groups with **voyage-01** and merges them above a
+similarity of 0.83. Both numbers were chosen together (see `notebooks/README.md`),
+and every one of the ~36,000 vectors in the index was chunked that way.
+
+This is a single point of failure, and not one that can be designed around: new
+talks need new embeddings, so there is nothing to cache. If Voyage retires either
+`voyage-01` or the 0.1.x `voyageai.get_embeddings` API this project pins, the
+consequence is specific — you can still index, but the new chunk boundaries will not
+match the existing corpus, and `tests/test_reproducibility.py` goes permanently red.
+
+The escape route exists and is worth knowing before you need it:
+
+1. `data/split/labeled/2023-09-24.json` holds **75 hand-labelled talk sections** with
+   per-paragraph split points. That is the ground truth the 0.83 threshold was tuned
+   against, and it does not depend on any embedding model.
+2. `notebooks/22_split_model_trainer.ipynb` re-runs the sweep. Point it at a current
+   model, sweep the threshold, and take the value minimising WindowDiff on the
+   held-out split.
+3. Because the boundaries will differ from the existing corpus, retrieval would be
+   non-uniform across eras unless you **re-split and re-index all ~3,300 talks**. That
+   is the real cost, and it is a deliberate decision, not a patch.
+
+Until then: do not bump `voyageai` past 0.1.x and do not change the model string.
 
 ### Afterwards
 

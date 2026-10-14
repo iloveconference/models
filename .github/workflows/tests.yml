@@ -94,6 +94,11 @@ jobs:
       # and updating them is separate work. Its report stays in this step's log.
       - name: Run Nox
         continue-on-error: ${{ matrix.session == 'safety' }}
+        env:
+          # The reproducibility gate needs voyage-01 to re-derive chunk ids. Without
+          # this the gate skips, and a dependency bump could go green having checked
+          # nothing - so tests/test_reproducibility.py fails loudly when it is absent.
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
         run: |
           nox --python=${{ matrix.python }}
 

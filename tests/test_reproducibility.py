@@ -193,6 +193,26 @@ def test_every_talk_fixture_is_pinned() -> None:
     )
 
 
+def test_the_gate_is_not_silently_skipped_in_ci() -> None:
+    """It fails when CI would skip the reproducibility checks for want of a key.
+
+    Skipping is the right behaviour on a laptop without credentials. In CI it is not:
+    a dependency bump would go green having never re-derived a single chunk id, which
+    is the one thing this file exists to prevent. So on CI a missing key is a failure,
+    and a loud one, rather than seven quiet skips in the summary.
+    """
+    if not os.environ.get("CI"):
+        pytest.skip("not running in CI")
+    if "VOYAGE_API_KEY" not in os.environ:
+        pytest.fail(
+            "VOYAGE_API_KEY is not available to CI, so the reproducibility checks below "
+            "would skip and this run would prove nothing about chunk stability.\n"
+            "Add it once with:  gh secret set VOYAGE_API_KEY --repo iloveconference/models\n"
+            "then pass it to the nox step as an env var.",
+            pytrace=False,
+        )
+
+
 @pytest.mark.network
 @pytest.mark.skipif("VOYAGE_API_KEY" not in os.environ, reason=SKIP_REASON)
 @pytest.mark.parametrize("filename", TALK_FILENAMES)
