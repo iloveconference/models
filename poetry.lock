@@ -6278,29 +6278,31 @@ tokenize-rt = ">=6.1.0"
 
 [[package]]
 name = "pywinpty"
-version = "3.0.5"
+version = "3.1.0"
 description = "Pseudo terminal support for Windows from Python."
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
-markers = "os_name == \"nt\""
+groups = ["main", "dev"]
 files = [
-    {file = "pywinpty-3.0.5-cp310-cp310-win_amd64.whl", hash = "sha256:b467dcad72365bc2205ed8b6e694e817d71de269d46e56cfe267dfa9d3d30e1b"},
-    {file = "pywinpty-3.0.5-cp310-cp310-win_arm64.whl", hash = "sha256:7dc4046ea8e4d7f0a16dae8dfcaeeda6df7ca3a9330444d2ba5bb96138fe0a91"},
-    {file = "pywinpty-3.0.5-cp311-cp311-win_amd64.whl", hash = "sha256:af7a8720c78776ddd6259b71dd567944f766a6cd67f8d2887fbc4973967bacda"},
-    {file = "pywinpty-3.0.5-cp311-cp311-win_arm64.whl", hash = "sha256:c2406f54f699eab75953fb75ce805f2ae55a33a957cd070890abd454fb4b7680"},
-    {file = "pywinpty-3.0.5-cp312-cp312-win_amd64.whl", hash = "sha256:d62946adf14b15b54c0b8d785f93fe18b04da23f4ad59e2e8c4612646e9abd23"},
-    {file = "pywinpty-3.0.5-cp312-cp312-win_arm64.whl", hash = "sha256:e9391c05fbfa7a992a97e831fc6849887b4014a614192e3d984a7ca59592b376"},
-    {file = "pywinpty-3.0.5-cp313-cp313-win_amd64.whl", hash = "sha256:48db1b0ad9d0a1b81dcaaa7163a99a7808deaceb0c1b2344716dc1fc090c3c4c"},
-    {file = "pywinpty-3.0.5-cp313-cp313-win_arm64.whl", hash = "sha256:2c6008fb2d3774b48693b2fcb7f2cc317ade9dc581289a964ffeeaf81307c9b5"},
-    {file = "pywinpty-3.0.5-cp313-cp313t-win_amd64.whl", hash = "sha256:22ce1b780d89821cc52daf6eac0708af22d93d000ce9c7c07e37489db8594598"},
-    {file = "pywinpty-3.0.5-cp313-cp313t-win_arm64.whl", hash = "sha256:9c2919a81bc5cfb09b86fc5a002112b2de95ca4304a07413cbeeb746a1307a5c"},
-    {file = "pywinpty-3.0.5-cp314-cp314-win_amd64.whl", hash = "sha256:03bb3c16d691d9242267201830bcd0e64a9b663170e9042bc84b210da9de15ac"},
-    {file = "pywinpty-3.0.5-cp314-cp314-win_arm64.whl", hash = "sha256:89c5c6ef08997a3b4b277b214a35fe15cab4dd6d119f0140aa71df5b1168fdbc"},
-    {file = "pywinpty-3.0.5-cp314-cp314t-win_amd64.whl", hash = "sha256:7b566165e0c5fdd6abe167a5ac8b954be6a843eb55a85946576d6bc1dea03d6d"},
-    {file = "pywinpty-3.0.5-cp314-cp314t-win_arm64.whl", hash = "sha256:24366280a8aa677323da87bec729cb3ea3b35367386cece0978bdc6e4695c690"},
-    {file = "pywinpty-3.0.5.tar.gz", hash = "sha256:61db0db063de9865adbea66db294628f8577f608d9764a4c7d3384eeacc4e81b"},
+    {file = "pywinpty-3.1.0-cp310-cp310-win_amd64.whl", hash = "sha256:04c6ea57c118f920d03e008dea7a06a8b735e4dd41fe7df8414e9b658f719aed"},
+    {file = "pywinpty-3.1.0-cp310-cp310-win_arm64.whl", hash = "sha256:cf8812cd0f30de7163cf479114e17d31d03a480c6fe2c7e1c42f367c507f0c1b"},
+    {file = "pywinpty-3.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:7ed683c7e4f31d92084d062478bf4aa9066a983c92700cb6ac6e4d5ca218723c"},
+    {file = "pywinpty-3.1.0-cp311-cp311-win_arm64.whl", hash = "sha256:6cf46443732493e78efb130ac525df117e49db493eee1fc98ba9db70be410c96"},
+    {file = "pywinpty-3.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:df249a2d942cbeef71f736119e96d246ea968fe9723dd25e8e439ba81814f85e"},
+    {file = "pywinpty-3.1.0-cp312-cp312-win_arm64.whl", hash = "sha256:31c9928935046abe20475392493b5074b3d966ea85c63cc83e939fb54cd9edfe"},
+    {file = "pywinpty-3.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:cc51bc690f58a969eab7dcc8d070321187ed47d5f076edc3b4a56076b38831f3"},
+    {file = "pywinpty-3.1.0-cp313-cp313-win_arm64.whl", hash = "sha256:3670cd05447e56836301620e92dfdd3ef40408cfb59f2ce6290c66c9986b53ef"},
+    {file = "pywinpty-3.1.0-cp314-cp314-win_amd64.whl", hash = "sha256:d01178e9391366bc3325b4c49068cfce95d10d416f6ade62140b274741bc11e0"},
+    {file = "pywinpty-3.1.0-cp314-cp314-win_arm64.whl", hash = "sha256:44918ef8bc408fbf52f54db9b8c33370aee0a59cee76b071a4b4f41ad5ed89c8"},
+    {file = "pywinpty-3.1.0-cp314-cp314t-win_amd64.whl", hash = "sha256:08afc428ec8765f2b8b9a9954727e1dafbefcb5912acc65952007779449650a1"},
+    {file = "pywinpty-3.1.0-cp314-cp314t-win_arm64.whl", hash = "sha256:98f00e50639e9edb740eb6eedd6c0ab82959f9633029db59363d06973d00ac0d"},
+    {file = "pywinpty-3.1.0-cp315-cp315-win_amd64.whl", hash = "sha256:188923081eea840c15f37c54a29ad6871b04fddf8fbf1c4acf317d0e27bd9cac"},
+    {file = "pywinpty-3.1.0-cp315-cp315-win_arm64.whl", hash = "sha256:714e8aa138bc61dcfd26c139d8cb8e7b954ea5c09c98bb014ab9b1f5741e289c"},
+    {file = "pywinpty-3.1.0-cp315-cp315t-win_amd64.whl", hash = "sha256:c08a2e5fa7a62f31b5965f0be1b92c67394cd5f75dc0a033d45fadc597f0640d"},
+    {file = "pywinpty-3.1.0-cp315-cp315t-win_arm64.whl", hash = "sha256:751d0c727d0e81a246aba722cf0dcb2155fd6bc7b82574b1432f81256157ec73"},
+    {file = "pywinpty-3.1.0.tar.gz", hash = "sha256:14595b68054d61f2f1e90cc2b30be47be201de200ae1851c433d8cded101bce0"},
 ]
+markers = {main = "os_name == \"nt\""}
 
 [[package]]
 name = "pyyaml"
